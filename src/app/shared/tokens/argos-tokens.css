@@ -1,0 +1,66 @@
+/* ════════════════════════════════════════════════════════════════════════
+   ARGOS · Design Tokens (Tailwind v4 theme)
+   Fuente de verdad de la identidad visual de la web administradora.
+   Espeja el design system de la app móvil (packages/design_system/lib/tokens)
+   para garantizar consistencia entre plataformas.
+   Ref: ARGOS Design System · 01 Color · 02 Tipografía · 03 Elementos base.
+
+   Regla de arquitectura: PROHIBIDO hardcodear valores arbitrarios en el HTML
+   (evitar bg-[#003841]). Usar siempre estos tokens (bg-primary, text-body…).
+   ════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  /* ── Marca ──────────────────────────────────────────────────────── */
+  /* Teal profundo · color primario. Fondos de marca, texto, navegación. */
+  --color-primary: #003841;
+  /* Dorado Peru · acento de acción / CTA. Botones, métricas, activos.   */
+  --color-secondary: #c5873c;
+
+  /* ── Tonos de apoyo ─────────────────────────────────────────────── */
+  --color-teal-muted: #3a6168; /* Teal secundario                       */
+  --color-success: #5a8a6b;    /* Verde · en vivo / operativo           */
+  --color-danger: #892f26;     /* Rojo · incidencia / error             */
+  --color-teal-washed: #e6eeec;/* Teal lavado · superficies de mapa     */
+  --color-warning-text: #9a6722;/* Texto de insignia "vencido/reparación"*/
+
+  /* ── Neutros cálidos (arena) ────────────────────────────────────── */
+  --color-canvas: #e7e4dd;       /* Lienzo / fondo base                 */
+  --color-background: #f4f1ea;   /* Fondo de app                        */
+  --color-surface-soft: #fbfaf6; /* Superficie suave                    */
+  --color-surface: #ffffff;      /* Tarjeta / superficie elevada        */
+
+  /* ── Texto ──────────────────────────────────────────────────────── */
+  --color-text-primary: #003841;   /* Principal (= primary)             */
+  --color-text-body: #5a5a52;      /* Cuerpo                            */
+  --color-text-secondary: #7d7d72; /* Secundario                       */
+  --color-text-muted: #9a9a90;     /* Tenue / etiqueta                 */
+
+  /* ── Bordes y divisores ─────────────────────────────────────────── */
+  --color-border-field: #e2ded3; /* Borde de campo (inputs)             */
+  --color-border-card: #ede9de;  /* Borde de tarjeta                    */
+  --color-divider: #f0ece2;      /* Divisor sutil                       */
+  --color-track: #efebe0;        /* Pista / track (barras)              */
+
+  /* ── Sobre color / deshabilitado ────────────────────────────────── */
+  --color-on-primary: #ffffff;
+  --color-on-secondary: #ffffff;
+  --color-disabled: #b0b0a6;
+
+  /* ── Tipografía ─────────────────────────────────────────────────── */
+  /* Display / títulos / saludos / números destacados.                  */
+  --font-display: 'EB Garamond', Garamond, serif;
+  /* Cuerpo, etiquetas, datos, formularios, UI.                         */
+  --font-sans: Verdana, Geneva, sans-serif;
+  --font-mono: ui-monospace, Menlo, monospace;
+
+  /* ── Radios (tokens de geometría) ───────────────────────────────── */
+  --radius-field: 12px; /* Inputs y botones                             */
+  --radius-card: 18px;  /* Paneles y contenedores principales           */
+  --radius-hero: 20px;  /* Hero / banners destacados                    */
+  --radius-pill: 9999px;/* Insignias, chips, avatares                   */
+
+  /* ── Sombras de elevación ───────────────────────────────────────── */
+  --shadow-card: 0 8px 20px rgba(0, 56, 65, 0.1);   /* Tarjeta flotante */
+  --shadow-cta: 0 8px 20px rgba(197, 135, 60, 0.28);/* Glow CTA dorado  */
+  --shadow-pin: 0 3px 8px rgba(0, 0, 0, 0.2);       /* Pin de mapa      */
+}
