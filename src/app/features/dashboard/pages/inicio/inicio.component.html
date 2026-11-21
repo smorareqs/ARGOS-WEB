@@ -1,0 +1,142 @@
+<app-demo-data-note module="dashboard" label="El inicio" />
+
+<!-- Área de lectura: saludo y contexto -->
+<div class="reveal mb-7 flex flex-wrap items-end justify-between gap-4">
+  <div>
+    <div class="mb-2 text-[11px] uppercase tracking-[1.6px] text-secondary">{{ today() }}</div>
+    <h1 class="font-display text-[36px] font-semibold leading-[1.04] tracking-display text-primary sm:text-[42px]">
+      {{ store.greeting() }}
+    </h1>
+    <p class="mt-2 text-[14px] text-text-body">Esto es lo que pasa hoy en {{ store.tenantName() }}.</p>
+  </div>
+  @if (store.data(); as d) {
+    <span class="inline-flex items-center gap-2.5 rounded-field border border-border-card bg-surface px-4 py-2 shadow-e1">
+      <span class="relative flex h-2 w-2">
+        <span class="pulse-ring h-2 w-2 rounded-pill text-success"></span>
+        <span class="live absolute inset-0 rounded-pill bg-success"></span>
+      </span>
+      <span class="text-[12.5px] text-text-body"><b class="text-primary">{{ d.teamsInField }}</b> equipos en campo · en vivo</span>
+    </span>
+  }
+</div>
+
+@if (store.loading() && !store.data()) {
+  <!-- Esqueleto con la silueta de los bloques (ux-ui.md §3.1) -->
+  <div class="skeleton h-[184px] !rounded-hero"></div>
+  <div class="mt-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
+    @for (i of [0, 1, 2, 3]; track i) {
+      <div class="skeleton h-[136px] !rounded-card"></div>
+    }
+  </div>
+  <div class="mt-5 grid gap-5 lg:grid-cols-12">
+    <div class="skeleton h-[420px] !rounded-card lg:col-span-5"></div>
+    <div class="skeleton h-[420px] !rounded-card lg:col-span-7"></div>
+  </div>
+} @else if (store.error(); as err) {
+  <div class="rounded-card border border-border-card bg-surface shadow-e1">
+    <app-empty-state kind="error" title="No pudimos cargar el inicio" [message]="err">
+      <app-button variant="secondary" (pressed)="store.load()">
+        <app-icon name="refresh" [size]="16" /> Reintentar
+      </app-button>
+    </app-empty-state>
+  </div>
+} @else if (store.data(); as d) {
+  <app-priority-hero
+    [alerts]="d.alerts"
+    [total]="d.totalAlerts"
+    [canManage]="store.canManageAlerts()"
+    (ack)="store.acknowledge($event)"
+    (act)="onAlertAction($event)"
+    (viewAll)="soon('alertas')"
+  />
+
+  <!-- Indicadores del día -->
+  <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <app-stat-tile
+      class="reveal lift"
+      style="--i: 1"
+      label="Limpiezas hoy"
+      icon="broom"
+      tone="gold"
+      [value]="d.stats.cleaningsDone"
+      [total]="d.stats.cleaningsTotal"
+      [note]="d.stats.cleaningsTotal - d.stats.cleaningsDone + ' por terminar antes de las 15:00'"
+    />
+    <app-stat-tile
+      class="reveal lift"
+      style="--i: 2"
+      label="Retrasadas"
+      icon="clock"
+      tone="warning"
+      [value]="d.stats.late"
+      [note]="d.stats.late ? 'Fuera de su ventana de horario' : 'Todo a tiempo por ahora'"
+    />
+    <app-stat-tile
+      class="reveal lift"
+      style="--i: 3"
+      label="Incidencias abiertas"
+      icon="maintenance"
+      tone="danger"
+      [value]="d.stats.incidentsOpen"
+      note="2 sin asignar a un responsable"
+    />
+    <app-stat-tile
+      class="reveal lift"
+      style="--i: 4"
+      label="Llegadas hoy"
+      icon="door"
+      tone="primary"
+      [value]="d.stats.arrivals"
+      [note]="d.stats.departures + ' salidas · check-in desde las 15:00'"
+    />
+  </div>
+
+  <div class="mt-5 grid gap-5 lg:grid-cols-12">
+    <!-- Columna izquierda -->
+    <div class="flex flex-col gap-5 lg:col-span-5">
+      <section class="reveal rounded-card border border-border-card bg-surface p-5 shadow-e1 sm:p-6" style="--i: 5">
+        <div class="mb-5 flex items-center justify-between">
+          <h2 class="font-display text-[20px] font-semibold text-primary">Cumplimiento del día</h2>
+          <a routerLink="/itinerario" class="card-link flex items-center gap-1 rounded-xs text-[12px] font-bold text-secondary">
+            Itinerario <app-icon name="arrow-right" [size]="14" />
+          </a>
+        </div>
+        <app-compliance-donut [data]="d.compliance" />
+      </section>
+
+      <section class="reveal rounded-card border border-border-card bg-surface p-5 shadow-e1 sm:p-6" style="--i: 6">
+        <div class="mb-5 flex items-center justify-between">
+          <h2 class="font-display text-[20px] font-semibold text-primary">Ranking del equipo</h2>
+          <span class="text-[11.5px] text-text-secondary">esta semana</span>
+        </div>
+        <app-team-ranking [rows]="d.ranking" />
+      </section>
+
+      <section class="reveal rounded-card border border-border-card bg-surface p-5 shadow-e1 sm:p-6" style="--i: 7">
+        <div class="mb-2 flex items-center justify-between">
+          <h2 class="font-display text-[19px] font-semibold text-primary">Mantenimientos</h2>
+          <a routerLink="/mantenimiento" class="card-link rounded-xs text-[12px] font-bold text-secondary">Tablero</a>
+        </div>
+        <app-upcoming-maintenance [items]="d.upcoming" />
+      </section>
+    </div>
+
+    <!-- Columna derecha -->
+    <div class="flex flex-col gap-5 lg:col-span-7">
+      <section class="reveal rounded-card border border-border-card bg-surface p-4 shadow-e1 sm:p-5" style="--i: 5">
+        <div class="mb-3 flex items-center justify-between px-1">
+          <h2 class="font-display text-[20px] font-semibold text-primary">Propiedades de hoy</h2>
+          <a routerLink="/propiedades" class="card-link flex items-center gap-1 rounded-xs text-[12px] font-bold text-secondary">
+            Ver todas <app-icon name="arrow-right" [size]="14" />
+          </a>
+        </div>
+        <app-properties-map [pins]="d.pins" (pinClick)="onPin($event)" />
+      </section>
+
+      <section class="reveal rounded-card border border-border-card bg-surface p-5 shadow-e1" style="--i: 6">
+        <h2 class="mb-4 font-display text-[19px] font-semibold text-primary">Hoy en tu operación</h2>
+        <app-activity-feed [items]="d.activity" />
+      </section>
+    </div>
+  </div>
+}

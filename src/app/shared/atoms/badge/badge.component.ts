@@ -1,47 +1,51 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { IconComponent, IconName } from '../icon/icon.component';
 
-export type BadgeStatus =
-  | 'in-progress' // En progreso (dorado)
-  | 'operational' // Operativo (verde)
-  | 'incident' // Incidencia / Requiere atención (rojo)
-  | 'pending' // Pendiente (gris)
-  | 'overdue' // Vencido (dorado)
-  | 'repairing'; // En reparación (dorado)
-
-interface BadgeStyle {
-  readonly wrap: string;
-  readonly dot: string;
-}
+/** Tonos semánticos (ux-ui.md §2.2 · semántica de estados). */
+export type BadgeTone = 'neutral' | 'info' | 'success' | 'validated' | 'warning' | 'danger' | 'muted';
 
 /**
- * Átomo · insignia de estado (§03 Insignias de estado).
- * Píldora con punto de color + etiqueta. El texto lo provee <ng-content>.
+ * Átomo · insignia de estado. Siempre color + icono (o punto) + texto:
+ * nunca solo color (ux-ui.md §1.2, §3.8). El texto entra por <ng-content>.
  */
 @Component({
   selector: 'app-badge',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [IconComponent],
   template: `
     <span
-      class="inline-flex items-center gap-[5px] rounded-pill px-3 py-[5px] text-[11px] font-bold"
-      [class]="style().wrap"
+      class="inline-flex items-center gap-[5px] whitespace-nowrap rounded-xs font-bold"
+      [class]="classes()"
     >
-      <span class="h-1.5 w-1.5 rounded-pill" [class]="style().dot"></span>
+      @if (icon(); as name) {
+        <app-icon [name]="name" [size]="size() === 'sm' ? 12 : 13" />
+      } @else {
+        <span class="h-1.5 w-1.5 rounded-pill bg-current opacity-80"></span>
+      }
       <ng-content />
     </span>
   `,
   styles: `:host { display: inline-flex; }`,
 })
 export class BadgeComponent {
-  readonly status = input.required<BadgeStatus>();
+  readonly tone = input<BadgeTone>('neutral');
+  readonly icon = input<IconName | null>(null);
+  readonly size = input<'sm' | 'md'>('md');
 
-  private static readonly STYLES: Record<BadgeStatus, BadgeStyle> = {
-    'in-progress': { wrap: 'bg-secondary/15 text-warning-text', dot: 'bg-secondary' },
-    operational: { wrap: 'bg-primary/10 text-primary', dot: 'bg-success' },
-    incident: { wrap: 'bg-danger/10 text-danger', dot: 'bg-danger' },
-    pending: { wrap: 'bg-divider text-text-secondary', dot: 'bg-disabled' },
-    overdue: { wrap: 'bg-secondary/15 text-warning-text', dot: 'bg-secondary' },
-    repairing: { wrap: 'bg-secondary/15 text-warning-text', dot: 'bg-secondary' },
+  private static readonly TONES: Record<BadgeTone, string> = {
+    neutral: 'bg-neutral-soft text-text-body',
+    info: 'bg-info-soft text-primary',
+    success: 'bg-success-soft text-success',
+    validated: 'bg-success-soft text-primary',
+    warning: 'bg-warning-soft text-warning',
+    danger: 'bg-danger-soft text-danger',
+    muted: 'bg-neutral-soft text-text-muted',
   };
 
-  protected readonly style = computed(() => BadgeComponent.STYLES[this.status()]);
+  protected readonly classes = computed(
+    () =>
+      `${BadgeComponent.TONES[this.tone()]} ${
+        this.size() === 'sm' ? 'px-2 py-[3px] text-[10.5px]' : 'px-2.5 py-[5px] text-[11px]'
+      }`,
+  );
 }

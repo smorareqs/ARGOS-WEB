@@ -9,7 +9,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <span
-      class="inline-flex items-center gap-2 rounded-pill border border-border-card bg-surface px-3.5 py-2"
+      class="inline-flex items-center gap-2 rounded-field border border-border-card bg-surface px-3.5 py-2"
     >
       <span class="live-dot h-2 w-2 rounded-pill bg-success"></span>
       <span class="text-[12px] text-text-body">{{ label() }}</span>

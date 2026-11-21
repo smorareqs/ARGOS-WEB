@@ -1,81 +1,79 @@
-import { Injectable, computed, signal } from '@angular/core';
-import { DashboardData } from '../models/dashboard.model';
-
-/** Datos mock del Inicio (1:1 con ARGOS Web · Frame 02). */
-const MOCK_DASHBOARD: DashboardData = {
-  greetingName: 'Carlos',
-  teamsInField: 9,
-  highPriorityCount: 2,
-  totalAlerts: 5,
-  alerts: [
-    {
-      icon: 'alert-chat',
-      title: 'Cámara de seguridad averiada — Casa Dunas',
-      meta: 'Reportada por Ana Solís · hace 12 min',
-      action: 'Asignar',
-    },
-    {
-      icon: 'alert-triangle',
-      title: 'Mantenimiento vencido — Apto 304 · filtro de agua',
-      meta: 'Vencido hace 4 días',
-      action: 'Programar',
-    },
-  ],
-  compliance: { percent: 58, done: 22, total: 38, inProgress: 9, pending: 7 },
-  mapPins: [
-    { kind: 'in-progress', left: 18, top: 30 },
-    { kind: 'finished', left: 40, top: 58 },
-    { kind: 'incident', left: 64, top: 40 },
-    { kind: 'finished', left: 30, top: 72 },
-    { kind: 'in-progress', left: 78, top: 66 },
-    { kind: 'finished', left: 54, top: 18 },
-  ],
-  mapActiveCount: 8,
-  ranking: [
-    { position: 1, nombre: 'María Ramos', iniciales: 'MR', score: 48, progress: 96, leader: true },
-    { position: 2, nombre: 'Jorge Peña', iniciales: 'JP', score: 41, progress: 82, leader: false },
-    { position: 3, nombre: 'Ana Solís', iniciales: 'AS', score: 37, progress: 74, leader: false },
-    { position: 4, nombre: 'Luis Torres', iniciales: 'LT', score: 31, progress: 61, leader: false },
-  ],
-  maintenance: [
-    {
-      property: 'Casa Dunas',
-      system: 'Cámara de seguridad',
-      status: 'incident',
-      statusLabel: 'Requiere atención',
-    },
-    {
-      property: 'Apto 304 · Marbella Bay',
-      system: 'Sistema de agua',
-      status: 'overdue',
-      statusLabel: 'Vencido',
-    },
-    {
-      property: 'Apto 12A · Vista Verde',
-      system: 'Climatización (A/C)',
-      status: 'repairing',
-      statusLabel: 'En reparación',
-    },
-    {
-      property: 'Apto 201 · Sol Naciente',
-      system: 'Pintura exterior',
-      status: 'operational',
-      statusLabel: 'Operativo',
-    },
-  ],
-};
+import { Injectable, computed, inject, signal } from '@angular/core';
+import { SessionStore } from '../../../core/store/session.store';
+import { ToastService } from '../../../core/services/toast.service';
+import { toApiError } from '../../../core/http/api-error';
+import { DashboardApi } from '../services/dashboard-api.service';
+import { DashboardAlert, DashboardData } from '../models/dashboard.model';
 
 /**
- * Tienda del dominio de dashboard. Expone los datos del Inicio vía Signals de
- * sólo lectura (§5). Hoy sirve datos mock; mañana un `dashboard-api.service.ts`
- * puro hará la petición y esta tienda procesará y publicará el resultado.
- *
- * Se provee a nivel de ruta (lifecycle de la sección) → se destruye al salir.
+ * Tienda del Inicio. Vive con la pantalla (providers del componente): al
+ * salir o al cambiar de empresa se destruye y la siguiente carga es fresca.
  */
 @Injectable()
 export class DashboardStore {
-  private readonly _data = signal<DashboardData>(MOCK_DASHBOARD);
+  private readonly api = inject(DashboardApi);
+  private readonly session = inject(SessionStore);
+  private readonly toast = inject(ToastService);
+
+  private readonly _data = signal<DashboardData | null>(null);
+  private readonly _loading = signal(true);
+  private readonly _error = signal<string | null>(null);
 
   readonly data = this._data.asReadonly();
-  readonly greeting = computed(() => `Buenos días, ${this._data().greetingName}`);
+  readonly loading = this._loading.asReadonly();
+  readonly error = this._error.asReadonly();
+
+  readonly firstName = computed(() => this.session.user()?.nombre.split(' ')[0] ?? '');
+  readonly tenantName = computed(() => this.session.tenant()?.name ?? '');
+  readonly canManageAlerts = computed(() => this.session.can('alerts.manage'));
+
+  readonly greeting = computed(() => {
+    const h = Number(
+      new Intl.DateTimeFormat('es-GT', { hour: 'numeric', hour12: false, timeZone: 'America/Guatemala' }).format(new Date()),
+    );
+    const salute = h < 12 ? 'Buenos días' : h < 19 ? 'Buenas tardes' : 'Buenas noches';
+    return `${salute}, ${this.firstName()}`;
+  });
+
+  async load(): Promise<void> {
+    this._loading.set(true);
+    this._error.set(null);
+    try {
+      this._data.set(await this.api.get());
+    } catch (err) {
+      this._error.set(toApiError(err).detail);
+    } finally {
+      this._loading.set(false);
+    }
+  }
+
+  /** Reconocer una alerta: se quita al instante y se ofrece deshacer (6 s). */
+  async acknowledge(alert: DashboardAlert): Promise<void> {
+    const before = this._data();
+    if (!before) return;
+    this.patchAlerts((list) => list.filter((a) => a.id !== alert.id), -1);
+    try {
+      await this.api.acknowledge(alert.id);
+      this.toast.success('Alerta reconocida.', {
+        label: 'Deshacer',
+        run: () => void this.undo(alert, before.alerts.indexOf(alert)),
+      });
+    } catch (err) {
+      this._data.set(before);
+      this.toast.error(toApiError(err).detail);
+    }
+  }
+
+  private async undo(alert: DashboardAlert, index: number): Promise<void> {
+    this.patchAlerts((list) => {
+      const next = [...list];
+      next.splice(Math.max(0, index), 0, alert);
+      return next;
+    }, +1);
+    await this.api.restore(alert.id).catch(() => undefined);
+  }
+
+  private patchAlerts(fn: (a: readonly DashboardAlert[]) => readonly DashboardAlert[], delta: number): void {
+    this._data.update((d) => (d ? { ...d, alerts: fn(d.alerts), totalAlerts: d.totalAlerts + delta } : d));
+  }
 }

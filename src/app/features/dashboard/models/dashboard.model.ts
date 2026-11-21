@@ -1,60 +1,78 @@
 import { IconName } from '../../../shared/atoms/icon/icon.component';
-import { BadgeStatus } from '../../../shared/atoms/badge/badge.component';
+import { BadgeTone } from '../../../shared/atoms/badge/badge.component';
 
-/** Alerta de prioridad alta del hero. */
-export interface PriorityAlert {
-  readonly icon: IconName;
+/** Contrato de `GET /api/v1/dashboard` (W-B1, agregado del backend). */
+
+export type AlertKind = 'incident' | 'maintenance' | 'late' | 'inventory';
+
+export interface DashboardAlert {
+  readonly id: string;
+  readonly kind: AlertKind;
   readonly title: string;
   readonly meta: string;
   readonly action: string;
 }
 
-/** Resumen de cumplimiento del día (donut + desglose). */
+export interface DashboardStats {
+  readonly cleaningsDone: number;
+  readonly cleaningsTotal: number;
+  readonly late: number;
+  readonly incidentsOpen: number;
+  readonly arrivals: number;
+  readonly departures: number;
+}
+
 export interface Compliance {
-  readonly percent: number;
   readonly done: number;
-  readonly total: number;
   readonly inProgress: number;
+  readonly late: number;
   readonly pending: number;
 }
 
-/** Tipo de pin del mapa de propiedades. */
-export type MapPinKind = 'in-progress' | 'finished' | 'incident';
+export interface RankingRow {
+  readonly name: string;
+  readonly initials: string;
+  readonly score: number;
+  readonly progress: number;
+}
+
+export type PinStatus = 'ready' | 'cleaning' | 'occupied' | 'incident';
 
 export interface MapPin {
-  readonly kind: MapPinKind;
-  readonly left: number; // %
-  readonly top: number; // %
+  readonly id: string;
+  readonly code: string;
+  readonly name: string;
+  readonly status: PinStatus;
+  /** Posición en el mapa estilizado, en % del ancho y alto. */
+  readonly x: number;
+  readonly y: number;
 }
 
-/** Fila del ranking del equipo. */
-export interface RankingRow {
-  readonly position: number;
-  readonly nombre: string;
-  readonly iniciales: string;
-  readonly score: number;
-  readonly progress: number; // %
-  readonly leader: boolean;
+export interface ActivityItem {
+  readonly time: string;
+  readonly title: string;
+  readonly meta: string;
+  readonly icon: IconName;
+  readonly tone: 'primary' | 'gold' | 'success' | 'danger';
 }
 
-/** Estado de mantenimiento de una propiedad. */
-export interface MaintenanceRow {
+export interface UpcomingMaintenance {
+  readonly id: string;
+  readonly date: string;
   readonly property: string;
   readonly system: string;
-  readonly status: BadgeStatus;
-  readonly statusLabel: string;
+  readonly tone: BadgeTone;
+  readonly label: string;
 }
 
-/** Modelo agregado del dashboard de Inicio. */
 export interface DashboardData {
-  readonly greetingName: string;
   readonly teamsInField: number;
-  readonly highPriorityCount: number;
   readonly totalAlerts: number;
-  readonly alerts: readonly PriorityAlert[];
+  readonly alerts: readonly DashboardAlert[];
+  readonly stats: DashboardStats;
   readonly compliance: Compliance;
-  readonly mapPins: readonly MapPin[];
-  readonly mapActiveCount: number;
   readonly ranking: readonly RankingRow[];
-  readonly maintenance: readonly MaintenanceRow[];
+  readonly pins: readonly MapPin[];
+  readonly activity: readonly ActivityItem[];
+  readonly upcoming: readonly UpcomingMaintenance[];
 }

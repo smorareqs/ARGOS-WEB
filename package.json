@@ -4,9 +4,14 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:mock": "ng serve --configuration mock",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "docker:up": "docker compose up -d --build",
+    "docker:down": "docker compose --profile demo down",
+    "docker:logs": "docker compose logs -f web api",
+    "docker:demo": "docker compose --profile demo up -d --build web-demo"
   },
   "private": true,
   "packageManager": "npm@10.9.2",
@@ -17,6 +22,8 @@
     "@angular/forms": "^21.2.0",
     "@angular/platform-browser": "^21.2.0",
     "@angular/router": "^21.2.0",
+    "@dicebear/core": "^10.7.0",
+    "@dicebear/styles": "^10.6.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

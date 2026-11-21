@@ -2,44 +2,64 @@
    ARGOS · Design Tokens (Tailwind v4 theme)
    Fuente de verdad de la identidad visual de la web administradora.
    Espeja el design system de la app móvil (packages/design_system/lib/tokens)
-   para garantizar consistencia entre plataformas.
-   Ref: ARGOS Design System · 01 Color · 02 Tipografía · 03 Elementos base.
+   y los tokens nuevos definidos en APP/docs/plans/ux-ui.md §2.
 
    Regla de arquitectura: PROHIBIDO hardcodear valores arbitrarios en el HTML
    (evitar bg-[#003841]). Usar siempre estos tokens (bg-primary, text-body…).
+
+   Referencias estudiadas (2026-11-19) y qué se adaptó de cada una:
+   · Apple  → material translúcido solo en la capa funcional (topbar/sidebar),
+              saturate(180%) blur(20px); curva estándar cubic-bezier(.4,0,.6,1);
+              titulares grandes con tracking negativo.
+   · Airbnb → resortes como easing CSS `linear()`, elevación en capas con
+              sombras pequeñas, tarjetas guiadas por imagen.
+   · Hostaway / Breezeway → botones casi rectos (radio 8 px).
+   · One UI → área de lectura (título grande) separada del área de
+              interacción; cabecera que se condensa al hacer scroll;
+              contenido agrupado en bloques redondeados.
+   Las curvas de resorte son propias (solver de resorte amortiguado).
    ════════════════════════════════════════════════════════════════════════ */
 
 @theme {
   /* ── Marca ──────────────────────────────────────────────────────── */
-  /* Teal profundo · color primario. Fondos de marca, texto, navegación. */
-  --color-primary: #003841;
-  /* Dorado Peru · acento de acción / CTA. Botones, métricas, activos.   */
-  --color-secondary: #c5873c;
+  --color-primary: #003841; /* Teal profundo                          */
+  --color-primary-deep: #002a31; /* Teal noche (fondos de ilustración) */
+  --color-secondary: #c5873c; /* Dorado · acción / CTA                 */
+  --color-secondary-light: #e0a961; /* Dorado claro (brillos, luces) */
 
   /* ── Tonos de apoyo ─────────────────────────────────────────────── */
-  --color-teal-muted: #3a6168; /* Teal secundario                       */
-  --color-success: #5a8a6b;    /* Verde · en vivo / operativo           */
-  --color-danger: #892f26;     /* Rojo · incidencia / error             */
-  --color-teal-washed: #e6eeec;/* Teal lavado · superficies de mapa     */
-  --color-warning-text: #9a6722;/* Texto de insignia "vencido/reparación"*/
+  --color-teal-muted: #3a6168;
+  --color-teal-washed: #e6eeec;
+  --color-success: #5a8a6b;
+  --color-danger: #892f26;
+  --color-warning: #9a6722;
+  --color-warning-text: #9a6722;
+
+  /* ── Fondos semánticos de estado (ux-ui.md §2.2) ────────────────── */
+  --color-success-soft: #e3eee6;
+  --color-warning-soft: #f6e7d2;
+  --color-danger-soft: #f3e1de;
+  --color-info-soft: #e6eeec;
+  --color-neutral-soft: #efebe0;
+  --color-offline: #5a5a52;
 
   /* ── Neutros cálidos (arena) ────────────────────────────────────── */
-  --color-canvas: #e7e4dd;       /* Lienzo / fondo base                 */
-  --color-background: #f4f1ea;   /* Fondo de app                        */
-  --color-surface-soft: #fbfaf6; /* Superficie suave                    */
-  --color-surface: #ffffff;      /* Tarjeta / superficie elevada        */
+  --color-canvas: #e7e4dd;
+  --color-background: #f4f1ea;
+  --color-surface-soft: #fbfaf6;
+  --color-surface: #ffffff;
 
   /* ── Texto ──────────────────────────────────────────────────────── */
-  --color-text-primary: #003841;   /* Principal (= primary)             */
-  --color-text-body: #5a5a52;      /* Cuerpo                            */
-  --color-text-secondary: #7d7d72; /* Secundario                       */
-  --color-text-muted: #9a9a90;     /* Tenue / etiqueta                 */
+  --color-text-primary: #003841;
+  --color-text-body: #5a5a52;
+  --color-text-secondary: #7d7d72;
+  --color-text-muted: #9a9a90;
 
   /* ── Bordes y divisores ─────────────────────────────────────────── */
-  --color-border-field: #e2ded3; /* Borde de campo (inputs)             */
-  --color-border-card: #ede9de;  /* Borde de tarjeta                    */
-  --color-divider: #f0ece2;      /* Divisor sutil                       */
-  --color-track: #efebe0;        /* Pista / track (barras)              */
+  --color-border-field: #e2ded3;
+  --color-border-card: #ede9de;
+  --color-divider: #f0ece2;
+  --color-track: #efebe0;
 
   /* ── Sobre color / deshabilitado ────────────────────────────────── */
   --color-on-primary: #ffffff;
@@ -47,20 +67,75 @@
   --color-disabled: #b0b0a6;
 
   /* ── Tipografía ─────────────────────────────────────────────────── */
-  /* Display / títulos / saludos / números destacados.                  */
-  --font-display: 'EB Garamond', Garamond, serif;
-  /* Cuerpo, etiquetas, datos, formularios, UI.                         */
-  --font-sans: Verdana, Geneva, sans-serif;
-  --font-mono: ui-monospace, Menlo, monospace;
+  /* Una sola sans para toda la web, como las referencias (SF Pro, Airbnb
+     Cereal, Figtree…). EB Garamond queda solo en el wordmark del logo. */
+  --font-display: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Menlo, monospace;
 
-  /* ── Radios (tokens de geometría) ───────────────────────────────── */
-  --radius-field: 12px; /* Inputs y botones                             */
-  --radius-card: 18px;  /* Paneles y contenedores principales           */
-  --radius-hero: 20px;  /* Hero / banners destacados                    */
-  --radius-pill: 9999px;/* Insignias, chips, avatares                   */
+  /* ── Radios: rectos y sobrios (botones 8 px, como Hostaway/Breezeway) ── */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-field: 8px;
+  --radius-tile: 10px;
+  --radius-card: 12px;
+  --radius-hero: 14px;
+  --radius-sheet: 16px;
+  --radius-pill: 9999px;
 
-  /* ── Sombras de elevación ───────────────────────────────────────── */
-  --shadow-card: 0 8px 20px rgba(0, 56, 65, 0.1);   /* Tarjeta flotante */
-  --shadow-cta: 0 8px 20px rgba(197, 135, 60, 0.28);/* Glow CTA dorado  */
-  --shadow-pin: 0 3px 8px rgba(0, 0, 0, 0.2);       /* Pin de mapa      */
+  /* ── Elevación en capas, teñida de teal ─────────────────────────── */
+  --shadow-e1: 0 0 0 1px rgba(0, 56, 65, 0.04), 0 1px 2px rgba(0, 56, 65, 0.05),
+    0 2px 8px rgba(0, 56, 65, 0.04);
+  --shadow-e2: 0 0 0 1px rgba(0, 56, 65, 0.04), 0 2px 4px rgba(0, 56, 65, 0.05),
+    0 8px 24px rgba(0, 56, 65, 0.09);
+  --shadow-e3: 0 0 0 1px rgba(0, 56, 65, 0.05), 0 6px 16px rgba(0, 56, 65, 0.1),
+    0 24px 48px rgba(0, 56, 65, 0.16);
+  --shadow-card: 0 8px 20px rgba(0, 56, 65, 0.1);
+  --shadow-cta: 0 1px 2px rgba(122, 78, 26, 0.22);
+  --shadow-pin: 0 3px 8px rgba(0, 0, 0, 0.2);
+  /* Brillo interno de botones (edge effect) */
+  --shadow-edge: inset 0 1px 0 rgba(255, 255, 255, 0.14), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
+
+  /* ── Curvas (utilidades ease-*) ─────────────────────────────────── */
+  --ease-standard: cubic-bezier(0.4, 0, 0.6, 1);
+  --ease-enter: cubic-bezier(0.1, 0.9, 0.2, 1);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --ease-spring: linear(0, 0.0734, 0.2227, 0.3844, 0.5305, 0.6514, 0.7464, 0.8183, 0.8715, 0.9101,
+      0.9377, 0.9571, 0.9707, 0.9801, 0.9866, 0.991, 1);
+  --ease-bounce: linear(0, 0.0478, 0.1635, 0.3131, 0.4713, 0.621, 0.7518, 0.8587, 0.9406, 0.999,
+      1.037, 1.0583, 1.0669, 1.0666, 1.0604, 1.051, 1.0404, 1.0299, 1.0204, 1.0125, 1);
+}
+
+/* Tokens de movimiento y materiales que no son namespaces de Tailwind. */
+:root {
+  /* Duraciones (ux-ui.md §2.4) */
+  --dur-fast: 150ms;
+  --dur-base: 250ms;
+  --dur-slow: 400ms;
+  /* Resortes propios: curva + duración natural de asentamiento */
+  --spring-standard: var(--ease-spring);
+  --spring-standard-dur: 440ms;
+  --spring-snappy: linear(0, 0.041, 0.1366, 0.2566, 0.3815, 0.4999, 0.6057, 0.6963, 0.7713, 0.8317,
+      0.8791, 0.9155, 0.9428, 0.9629, 0.9772, 0.9872, 1);
+  --spring-snappy-dur: 245ms;
+  --spring-bounce: var(--ease-bounce);
+  --spring-bounce-dur: 360ms;
+  --spring-gentle: linear(0, 0.0757, 0.2281, 0.3917, 0.5382, 0.6585, 0.7523, 0.823, 0.875, 0.9126,
+      0.9393, 0.9582, 0.9713, 0.9805, 0.9867, 0.991, 1);
+  --spring-gentle-dur: 590ms;
+  /* Escalonado de listas: 30 ms por elemento, máximo 8 */
+  --stagger: 30ms;
+  /* Desplazamiento de entrada; se anula con "reducir movimiento" */
+  --rise: 10px;
+
+  /* Material translúcido de la capa funcional (ref. Apple) */
+  --glass-bg: rgba(251, 250, 246, 0.78);
+  --glass-filter: saturate(180%) blur(20px);
+  --overlay: rgba(0, 56, 65, 0.55);
+
+  /* Retícula del portal (ux-ui.md §2.5) */
+  --sidebar-w: 260px;
+  --sidebar-w-collapsed: 76px;
+  --topbar-h: 64px;
+  --content-max: 1280px;
 }

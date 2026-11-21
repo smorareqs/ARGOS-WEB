@@ -1,0 +1,301 @@
+<app-landing-header [signedIn]="session.isAuthenticated()" (demo)="demoOpen.set(true)" />
+
+<main class="bg-surface text-text-body">
+  <!-- ── Hero ─────────────────────────────────────────────────────────── -->
+  <section id="inicio" class="bg-cream relative scroll-mt-16 overflow-hidden pb-20 pt-[104px] sm:pb-28 sm:pt-[132px]">
+    <app-topo-lines class="absolute inset-0" [seed]="11" [opacity]="0.075" [peaks]="heroPeaks" />
+    <div class="relative mx-auto grid max-w-[1240px] items-center gap-14 px-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,540px)] lg:gap-20">
+      <div class="max-w-[620px]" appInView>
+        <p class="fx-up text-[13px] font-bold text-secondary">Operación de alquileres de corto plazo</p>
+        <h1
+          class="fx-up mt-4 font-display text-[44px] font-semibold leading-[1.02] tracking-display text-primary sm:text-[58px] lg:text-[66px]"
+          style="--d: 1"
+        >
+          Cada propiedad lista para el próximo huésped.
+        </h1>
+        <p class="fx-up mt-6 max-w-[540px] text-[16px] leading-[1.7] sm:text-[17px]" style="--d: 2">
+          ARGOS coordina limpieza, mantenimiento, inventario y huéspedes en todas tus propiedades. Tu equipo trabaja
+          desde la app; tú lo ves todo desde el panel.
+        </p>
+        <div class="fx-up mt-9 flex flex-wrap gap-3" style="--d: 3">
+          <button type="button" class="btn btn-primary press" (click)="demoOpen.set(true)">Solicitar una demo</button>
+          @if (session.isAuthenticated()) {
+            <a routerLink="/inicio" class="btn btn-outline press">Ir a mi panel <app-icon name="arrow-right" [size]="16" /></a>
+          } @else {
+            <a routerLink="/login" class="btn btn-outline press">Iniciar sesión</a>
+          }
+        </div>
+        <ul class="fx-up mt-14 grid gap-6 border-t border-primary/10 pt-7 sm:grid-cols-3" style="--d: 4">
+          @for (f of heroFacts; track f.title) {
+            <li class="group">
+              <app-spot-icon [name]="f.icon" [size]="48" tint="#ffffff" />
+              <p class="mt-3 text-[14px] font-bold text-primary">{{ f.title }}</p>
+              <p class="mt-1 text-[12.5px] leading-relaxed text-text-secondary">{{ f.text }}</p>
+            </li>
+          }
+        </ul>
+      </div>
+      <app-hero-visual class="lg:mr-6" />
+    </div>
+  </section>
+
+  <!-- ── Operación ───────────────────────────────────────────────────── -->
+  <section id="operacion" class="scroll-mt-16 bg-surface py-24 sm:py-32">
+    <div class="mx-auto max-w-[1240px] px-5 sm:px-8">
+      <div class="grid items-end gap-6 lg:grid-cols-2 lg:gap-16" appInView>
+        <h2 class="fx-up font-display text-[36px] font-semibold leading-[1.06] tracking-display text-primary sm:text-[48px]">
+          Tu equipo en campo, con todo lo que necesita.
+        </h2>
+        <p class="fx-up max-w-[520px] text-[15.5px] leading-[1.7] lg:justify-self-end" style="--d: 1">
+          Cada persona abre la app y encuentra sus tareas del día, en orden y con las instrucciones de cada propiedad. Lo que
+          hace queda registrado al momento, con fotos, hora y ubicación.
+        </p>
+      </div>
+
+      <div class="mt-14 grid gap-x-6 gap-y-14 md:grid-cols-3">
+        @for (c of ops; track c.title; let i = $index) {
+          <article class="group fx-up" [style.--d]="i" appInView>
+            <div class="relative aspect-[4/3.4] overflow-hidden rounded-hero">
+              <app-photo class="zoom h-full w-full" [photo]="c.photo" sizes="(min-width: 768px) 33vw, 100vw" />
+              <span class="status absolute bottom-3 left-3 flex items-center gap-2 rounded-xs px-2.5 py-1.5 text-[11.5px] font-bold text-primary">
+                <span class="h-2 w-2 rounded-pill" [class]="toneDot(c.tone)"></span>{{ c.status }}
+              </span>
+            </div>
+            <h3 class="mt-6 font-display text-[28px] font-semibold leading-none text-primary">{{ c.title }}</h3>
+            <p class="mt-3 text-[14px] leading-[1.7]">{{ c.text }}</p>
+            <ul class="mt-4 space-y-2">
+              @for (f of c.facts; track f) {
+                <li class="flex items-center gap-2.5 text-[13px] text-primary">
+                  <app-icon name="check" [size]="15" class="text-success" />{{ f }}
+                </li>
+              }
+            </ul>
+          </article>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Panel ───────────────────────────────────────────────────────── -->
+  <section id="panel" class="relative scroll-mt-16 overflow-hidden bg-primary py-24 text-white sm:py-32">
+    <app-topo-lines class="absolute inset-0" [seed]="5" color="#ffffff" [opacity]="0.07" [peaks]="panelPeaks" />
+    <div class="relative mx-auto max-w-[1240px] px-5 sm:px-8">
+      <div class="mx-auto max-w-[780px] text-center" appInView>
+        <p class="fx-up text-[13px] font-bold text-secondary-light">Panel web</p>
+        <h2 class="fx-up mt-3 font-display text-[36px] font-semibold leading-[1.06] tracking-display sm:text-[48px]" style="--d: 1">
+          Lo que pasa hoy en todas tus propiedades, en una pantalla.
+        </h2>
+        <p class="fx-up mx-auto mt-5 max-w-[600px] text-[15.5px] leading-[1.7] text-white/75" style="--d: 2">
+          Alertas, avance de limpiezas, incidencias abiertas y llegadas del día. Se actualiza solo mientras tu equipo trabaja.
+        </p>
+      </div>
+
+      <div class="shot mx-auto mt-14 max-w-[1120px]" [appScrollProgress]="0.35">
+        <figure class="frame overflow-hidden rounded-hero bg-surface">
+          <div class="flex h-9 items-center justify-center gap-1.5 border-b border-divider bg-surface-soft text-[11.5px] text-text-secondary">
+            <app-icon name="lock" [size]="11" /> app.argos.io/inicio
+          </div>
+          <img
+            src="images/producto/panel-inicio.webp"
+            width="2880"
+            height="1800"
+            loading="lazy"
+            decoding="async"
+            class="block h-auto w-full"
+            alt="Pantalla de inicio del panel de ARGOS: alertas de prioridad, limpiezas del día, incidencias abiertas, llegadas, cumplimiento y mapa de propiedades."
+          />
+        </figure>
+      </div>
+
+      <div class="mx-auto mt-16 grid max-w-[1120px] gap-10 md:grid-cols-3">
+        @for (p of panelPoints; track p.title; let i = $index) {
+          <div class="fx-up group flex gap-4 border-t border-white/15 pt-6" [style.--d]="i" appInView>
+            <app-spot-icon [name]="p.icon" [size]="52" />
+            <div>
+              <h3 class="text-[15.5px] font-bold">{{ p.title }}</h3>
+              <p class="mt-1.5 text-[13.5px] leading-[1.7] text-white/70">{{ p.text }}</p>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Multiempresa ────────────────────────────────────────────────── -->
+  <section id="empresas" class="bg-cream relative scroll-mt-16 overflow-hidden py-24 sm:py-32">
+    <app-topo-lines class="absolute inset-0" [seed]="23" [opacity]="0.08" [peaks]="sidePeaks" />
+    <div class="relative mx-auto grid max-w-[1240px] items-center gap-14 px-5 sm:px-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,620px)] lg:gap-20">
+      <div appInView>
+        <p class="fx-up text-[13px] font-bold text-secondary">Multiempresa</p>
+        <h2 class="fx-up mt-3 font-display text-[36px] font-semibold leading-[1.06] tracking-display text-primary sm:text-[48px]" style="--d: 1">
+          Una plataforma. Cada empresa en su propio espacio.
+        </h2>
+        <p class="fx-up mt-5 max-w-[500px] text-[15.5px] leading-[1.7]" style="--d: 2">
+          ARGOS atiende a muchas empresas a la vez sin mezclar nada: cada una tiene sus propiedades, su equipo, sus roles y sus
+          reglas.
+        </p>
+        <ul class="mt-10 grid gap-x-8 gap-y-7 sm:grid-cols-2">
+          @for (p of tenantPoints; track p.title; let i = $index) {
+            <li class="fx-up group" [style.--d]="i + 3">
+              <app-spot-icon [name]="p.icon" [size]="48" tint="#ffffff" />
+              <p class="mt-3 text-[14px] font-bold text-primary">{{ p.title }}</p>
+              <p class="mt-1 text-[13px] leading-[1.65] text-text-secondary">{{ p.text }}</p>
+            </li>
+          }
+        </ul>
+      </div>
+      <app-tenant-switch />
+    </div>
+  </section>
+
+  <!-- ── Guatemala ───────────────────────────────────────────────────── -->
+  <section aria-labelledby="gt-title" [appScrollProgress]="0.15">
+    <div class="band-clip relative h-[78vh] max-h-[820px] min-h-[520px] overflow-hidden bg-primary-deep">
+      <app-photo class="band-img absolute inset-0" [photo]="photos.antiguaArch" [decorative]="true" sizes="100vw" />
+      <div class="band-shade absolute inset-0"></div>
+      <div class="relative mx-auto flex h-full max-w-[1240px] flex-col justify-end px-5 pb-14 text-white sm:px-8 sm:pb-20" appInView>
+        <p class="fx-up text-[13px] font-bold text-secondary-light">Hecho en Guatemala</p>
+        <h2 id="gt-title" class="fx-up mt-3 max-w-[780px] font-display text-[38px] font-semibold leading-[1.05] tracking-display sm:text-[56px]" style="--d: 1">
+          Para operar en Antigua, Atitlán, la capital y la costa.
+        </h2>
+        <p class="fx-up mt-5 max-w-[560px] text-[15.5px] leading-[1.7] text-white/80" style="--d: 2">
+          La app sigue funcionando sin señal y sincroniza al volver la conexión: en un pueblo del lago o en el sótano de un edificio.
+        </p>
+      </div>
+      <a
+        [href]="photos.antiguaArch.source"
+        target="_blank"
+        rel="noopener"
+        class="credit absolute bottom-3 right-4 text-[10.5px] text-white/70 hover:text-white"
+        >Foto: {{ photos.antiguaArch.credit }} · {{ photos.antiguaArch.license }}</a
+      >
+    </div>
+  </section>
+
+  <!-- ── Seguridad ───────────────────────────────────────────────────── -->
+  <section id="seguridad" class="scroll-mt-16 bg-surface py-24 sm:py-32">
+    <div class="mx-auto grid max-w-[1240px] gap-14 px-5 sm:px-8 lg:grid-cols-[minmax(0,420px)_1fr] lg:gap-20">
+      <div appInView>
+        <p class="fx-up text-[13px] font-bold text-secondary">Seguridad</p>
+        <h2 class="fx-up mt-3 font-display text-[36px] font-semibold leading-[1.06] tracking-display text-primary sm:text-[48px]" style="--d: 1">
+          Tu información, bajo llave.
+        </h2>
+        <p class="fx-up mt-5 text-[15.5px] leading-[1.7]" style="--d: 2">
+          Pensado para equipos grandes, con personal que entra y sale y datos de huéspedes que hay que proteger.
+        </p>
+      </div>
+      <div class="grid gap-4 sm:grid-cols-2">
+        @for (s of security; track s.title; let i = $index) {
+          <div class="fx-up group rounded-card bg-cream p-6" [style.--d]="i" appInView>
+            <app-spot-icon [name]="s.icon" [size]="52" tint="#ffffff" />
+            <h3 class="mt-4 text-[15.5px] font-bold text-primary">{{ s.title }}</h3>
+            <p class="mt-2 text-[13.5px] leading-[1.7]">{{ s.text }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Por qué ARGOS ───────────────────────────────────────────────── -->
+  <section id="nombre" class="bg-cream relative scroll-mt-16 overflow-hidden py-24 sm:py-28">
+    <app-topo-lines class="absolute inset-0" [seed]="3" [opacity]="0.09" [peaks]="sidePeaks" />
+    <div class="relative mx-auto grid max-w-[1040px] items-center gap-12 px-5 sm:px-8 md:grid-cols-[auto_1fr] md:gap-16" appInView (entered)="markDrawn.set(true)">
+      <div class="fx-scale flex h-[200px] w-[200px] items-center justify-center rounded-hero border border-border-card bg-surface text-primary sm:h-[240px] sm:w-[240px]">
+        @if (markDrawn()) {
+          <app-logo [size]="86" [wordmark]="false" [intro]="true" />
+        }
+      </div>
+      <div>
+        <p class="fx-up text-[13px] font-bold text-secondary">Por qué ARGOS</p>
+        <h2 class="fx-up mt-3 font-display text-[34px] font-semibold leading-[1.08] tracking-display text-primary sm:text-[42px]" style="--d: 1">
+          El guardián que nunca descuida lo que se le confía.
+        </h2>
+        <p class="fx-up mt-5 text-[15px] leading-[1.75]" style="--d: 2">
+          En la mitología griega, Argos era el guardián de confianza de la diosa Hera: lo que quedaba a su cargo nunca quedaba
+          desatendido. Eso queremos ser para cada propiedad que administras.
+        </p>
+        <p class="fx-up mt-4 text-[15px] leading-[1.75]" style="--d: 3">
+          El símbolo es una casa trazada con la greca, el ornamento griego por excelencia, en una sola línea continua: de
+          principio a fin, sin huecos.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Cierre ──────────────────────────────────────────────────────── -->
+  <section id="demo" class="scroll-mt-16 bg-surface py-20 sm:py-28">
+    <div class="mx-auto max-w-[1240px] px-5 sm:px-8">
+      <div class="relative overflow-hidden rounded-hero bg-primary-deep">
+        <app-photo class="absolute inset-0" [photo]="photos.atitlan" [decorative]="true" sizes="(min-width: 1240px) 1200px, 100vw" />
+        <div class="cta-shade absolute inset-0"></div>
+        <div class="relative flex min-h-[440px] max-w-[620px] flex-col justify-center px-7 py-14 text-white sm:px-14" appInView>
+          <h2 class="fx-up font-display text-[38px] font-semibold leading-[1.05] tracking-display sm:text-[52px]">Lleva tu operación a ARGOS.</h2>
+          <p class="fx-up mt-5 max-w-[460px] text-[15.5px] leading-[1.7] text-white/80" style="--d: 1">
+            Te mostramos la plataforma con datos como los de tu empresa y preparamos tu espacio.
+          </p>
+          <div class="fx-up mt-9 flex flex-wrap gap-3" style="--d: 2">
+            <button type="button" class="btn btn-white press" (click)="demoOpen.set(true)">Solicitar una demo</button>
+            @if (!session.isAuthenticated()) {
+              <a routerLink="/login" class="btn btn-ghost-white press">Iniciar sesión</a>
+            }
+          </div>
+        </div>
+        <a
+          [href]="photos.atitlan.source"
+          target="_blank"
+          rel="noopener"
+          class="credit absolute bottom-3 right-4 text-[10.5px] text-white/70 hover:text-white"
+          >Foto: {{ photos.atitlan.credit }} · {{ photos.atitlan.license }}</a
+        >
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ── Pie ─────────────────────────────────────────────────────────── -->
+<footer class="bg-cream border-t border-primary/10 text-[13px] text-text-secondary">
+  <div class="mx-auto grid max-w-[1240px] gap-10 px-5 py-14 sm:px-8 md:grid-cols-[1.5fr_1fr_1fr_1.6fr]">
+    <div>
+      <app-logo [size]="17" />
+      <p class="mt-4 max-w-[280px] leading-[1.7]">Limpieza, mantenimiento, inventario y huéspedes de tus alquileres de corto plazo, en un solo lugar.</p>
+    </div>
+    <div>
+      <p class="font-bold text-primary">Producto</p>
+      <ul class="mt-3 space-y-2.5">
+        <li><a [routerLink]="[]" fragment="operacion" class="hover:text-primary">Operación</a></li>
+        <li><a [routerLink]="[]" fragment="panel" class="hover:text-primary">Panel web</a></li>
+        <li><a [routerLink]="[]" fragment="empresas" class="hover:text-primary">Multiempresa</a></li>
+        <li><a [routerLink]="[]" fragment="seguridad" class="hover:text-primary">Seguridad</a></li>
+      </ul>
+    </div>
+    <div>
+      <p class="font-bold text-primary">Acceso</p>
+      <ul class="mt-3 space-y-2.5">
+        <li><a routerLink="/login" class="hover:text-primary">Iniciar sesión</a></li>
+        <li><button type="button" class="hover:text-primary" (click)="demoOpen.set(true)">Solicitar una demo</button></li>
+      </ul>
+    </div>
+    <div>
+      <p class="font-bold text-primary">Fotografías</p>
+      <ul class="mt-3 space-y-2.5 text-[12px] leading-[1.6]">
+        @for (c of credits; track c.source) {
+          <li>
+            <a [href]="c.source" target="_blank" rel="noopener" class="hover:text-primary">{{ c.name }}</a>
+            · {{ c.credit }}, {{ c.license }}
+          </li>
+        }
+        <li>Interiores y equipos: Unsplash</li>
+      </ul>
+    </div>
+  </div>
+  <div class="mx-auto flex max-w-[1240px] flex-wrap justify-between gap-2 border-t border-primary/10 px-5 py-6 text-[12px] sm:px-8">
+    <span>© {{ year }} ARGOS</span>
+    <span>Hecho en Guatemala</span>
+  </div>
+</footer>
+
+<app-drawer [(open)]="demoOpen" label="Solicitar una demo" [width]="500">
+  @if (demoOpen()) {
+    <app-demo-request (closed)="demoOpen.set(false)" />
+  }
+</app-drawer>

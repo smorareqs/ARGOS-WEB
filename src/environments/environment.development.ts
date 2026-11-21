@@ -1,5 +1,10 @@
-/** Entorno de desarrollo. */
+/** Entorno de desarrollo: acceso contra la API real (Docker con el backend en
+ *  :8000); los módulos que aún no existen en la API siguen simulados. */
 export const environment = {
   production: false,
   apiBaseUrl: 'http://localhost:8000',
+  /** true → ese módulo usa su mock (reparto.md §3.1). */
+  mocks: { auth: false, dashboard: true, properties: true, team: true, demoRequests: true },
+  /** Logos de las empresas de demostración (DEMO_TENANT_LOGOS). */
+  demoTenantLogos: true,
 };

@@ -1,15 +1,23 @@
 import { Routes } from '@angular/router';
-import { DashboardStore } from './store/dashboard.store';
+import { inject } from '@angular/core';
+import { MOCK_MODULES } from '../../core/tokens/api.tokens';
+import { DashboardApi, HttpDashboardApi } from './services/dashboard-api.service';
+import { MockDashboardApi } from './services/dashboard-api.mock';
 
 /**
- * Rutas internas del dominio de dashboard. La tienda se provee aquí para
- * compartir el ciclo de vida de la sección: se destruye al salir (§4).
+ * Rutas del Inicio. El servicio API (sin estado) se provee a nivel de ruta
+ * según MOCK_MODULES; la tienda vive en la pantalla.
  */
 export const DASHBOARD_ROUTES: Routes = [
   {
     path: '',
-    providers: [DashboardStore],
-    loadComponent: () =>
-      import('./pages/inicio/inicio.component').then((m) => m.InicioComponent),
+    data: { title: 'Inicio' },
+    providers: [
+      {
+        provide: DashboardApi,
+        useFactory: () => (inject(MOCK_MODULES).dashboard ? new MockDashboardApi() : new HttpDashboardApi()),
+      },
+    ],
+    loadComponent: () => import('./pages/inicio/inicio.component').then((m) => m.InicioComponent),
   },
 ];

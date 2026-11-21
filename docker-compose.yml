@@ -1,0 +1,50 @@
+# ARGOS completo en Docker: portal web + API en Go + PostgreSQL.
+#
+#   docker compose up -d --build   → web http://localhost:4200 · API http://localhost:8000 (docs en /docs)
+#   docker compose logs -f web api → ver los logs
+#   docker compose --profile demo down → apagar todo (también la demo si estaba arriba)
+#
+# La API, la base y las migraciones vienen de ../BACKEND/docker-compose.yml
+# (los dos repos deben estar uno al lado del otro y ../BACKEND/.env debe
+# existir). El servicio `seed` crea las empresas y cuentas de demostración.
+#
+# Modo demo (build optimizado, todo simulado, sin backend):
+#   docker compose --profile demo up -d --build web-demo   → http://localhost:4280
+
+name: argos-web
+
+include:
+  - path: ../BACKEND/docker-compose.yml
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dev
+    image: argos-web-dev
+    container_name: argos-web
+    depends_on:
+      api:
+        condition: service_started
+    ports:
+      - "4200:4200"
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - angular_cache:/app/.angular
+
+  web-demo:
+    profiles: ["demo"]
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        CONFIGURATION: demo
+    image: argos-web-demo
+    container_name: argos-web-demo
+    ports:
+      - "4280:80"
+
+volumes:
+  node_modules:
+  angular_cache:

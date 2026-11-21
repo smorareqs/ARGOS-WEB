@@ -1,39 +1,331 @@
 /* ARGOS Web · estilos globales
    ─────────────────────────────────────────────────────────────────────────
    Tailwind v4 (CSS-first) + tokens del design system ARGOS.
-   Los tokens (@theme) viven en shared/tokens/argos-tokens.css. */
+   Los tokens (@theme) viven en shared/tokens/argos-tokens.css.
+   Aquí solo: base, foco, utilidades de movimiento y keyframes compartidos
+   (los componentes tienen un presupuesto de 4 kB de estilos). */
 
-/* Tipografía de marca · EB Garamond (Verdana es fuente de sistema).
-   Debe ir primero: las reglas @import nativas no pueden seguir a otras reglas. */
-@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 
 @import 'tailwindcss';
 @import './app/shared/tokens/argos-tokens.css';
 
-/* Base global */
-* {
-  box-sizing: border-box;
+@layer base {
+  /* ── Base ─────────────────────────────────────────────────────────── */
+  * {
+    box-sizing: border-box;
+  }
+
+  html,
+  body {
+    margin: 0;
+    min-height: 100%;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--color-text-primary);
+    background: var(--color-background);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  button {
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+
+  /* Titulares: tracking negativo a tamaños grandes (ref. Apple). */
+  .font-display {
+    font-feature-settings: 'lnum' 1, 'kern' 1;
+  }
+
+  .tracking-display {
+    letter-spacing: var(--display-tracking, -0.024em);
+  }
+
+  /* Cifras tabulares para tablas y contadores. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Anillo de foco dorado de 2 px (ux-ui.md §3.8). */
+  :focus-visible {
+    outline: 2px solid var(--color-secondary);
+    outline-offset: 2px;
+    border-radius: 6px;
+  }
+
+  ::selection {
+    background: rgba(197, 135, 60, 0.28);
+    color: var(--color-primary);
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 56, 65, 0.14);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    border-radius: 10px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 56, 65, 0.26);
+  }
 }
 
-html,
-body {
-  margin: 0;
-  min-height: 100%;
+@layer components {
+  /* ── Materiales ───────────────────────────────────────────────────── */
+  /* Solo para la capa funcional (topbar, barras flotantes), nunca contenido. */
+  .material-glass {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+  }
+
+  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .material-glass {
+      background: rgba(251, 250, 246, 0.96);
+    }
+  }
+
+  /* ── Interacción ──────────────────────────────────────────────────── */
+  /* Respuesta táctil inmediata: escala al presionar (< 100 ms). */
+  .press {
+    transition: transform var(--dur-fast) var(--ease-standard);
+  }
+
+  .press:active:not(:disabled) {
+    transform: scale(0.97);
+    transition-duration: 60ms;
+  }
+
+  /* Elevación al pasar el cursor (tarjetas). */
+  .lift {
+    transition:
+      transform var(--spring-standard-dur) var(--spring-standard),
+      box-shadow var(--dur-base) var(--ease-standard);
+  }
+
+  @media (hover: hover) {
+    .lift:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-e2);
+    }
+  }
+
+  /* ── Entradas ─────────────────────────────────────────────────────── */
+  /* Aparición escalonada: style="--i: n" (máximo 8 pasos de 30 ms). */
+  .reveal {
+    animation: argos-rise var(--dur-slow) var(--ease-enter) both;
+    animation-delay: calc(min(var(--i, 0), 8) * var(--stagger));
+  }
+
+  .reveal-soft {
+    animation: argos-fade var(--dur-slow) var(--ease-enter) both;
+    animation-delay: calc(min(var(--i, 0), 8) * var(--stagger));
+  }
+
+  /* Error: sacudida breve y precisa (ref. HIG "brevity and precision"). */
+  .shake {
+    animation: argos-shake 360ms var(--ease-standard);
+  }
+
+  /* Esqueleto con brillo (ux-ui.md §3.1: nunca spinner central). */
+  .skeleton {
+    position: relative;
+    overflow: hidden;
+    background: var(--color-track);
+    border-radius: 8px;
+  }
+
+  .skeleton::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.65), transparent);
+    animation: argos-shimmer 1.4s var(--ease-standard) infinite;
+  }
+
+  /* Revelado al hacer scroll (directiva appInView): el contenedor o el propio
+     elemento recibe .is-in; --d escalona en pasos de 90 ms. */
+  .fx-up,
+  .fx-scale,
+  .fx-fade {
+    opacity: 0;
+    transition:
+      opacity 700ms var(--ease-enter),
+      transform 900ms var(--spring-gentle);
+    transition-delay: calc(var(--d, 0) * 90ms);
+  }
+
+  .fx-up {
+    transform: translateY(28px);
+  }
+
+  .fx-scale {
+    transform: scale(0.94);
+  }
+
+  .is-in .fx-up,
+  .is-in .fx-scale,
+  .is-in .fx-fade,
+  .fx-up.is-in,
+  .fx-scale.is-in,
+  .fx-fade.is-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Halo de "en vivo" y de incidencia. */
+  .pulse-ring {
+    position: relative;
+  }
+
+  .pulse-ring::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: currentColor;
+    animation: argos-ring 2.2s var(--ease-exit) infinite;
+  }
 }
 
-body {
-  font-family: var(--font-sans);
-  color: var(--color-text-primary);
-  background: var(--color-background);
+/* ── Keyframes compartidos ───────────────────────────────────────── */
+@keyframes argos-rise {
+  from {
+    opacity: 0;
+    transform: translateY(var(--rise));
+  }
 }
 
-/* Scrollbar fina (ref: design system helmet) */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+@keyframes argos-fade {
+  from {
+    opacity: 0;
+  }
 }
 
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 56, 65, 0.15);
-  border-radius: 8px;
+/* Entero animable (contadores que avanzan con counter(), p. ej. 9 → 12). */
+@property --n {
+  syntax: '<integer>';
+  inherits: false;
+  initial-value: 0;
+}
+
+@keyframes argos-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
+@keyframes argos-shake {
+  20% {
+    transform: translateX(-6px);
+  }
+  40% {
+    transform: translateX(5px);
+  }
+  60% {
+    transform: translateX(-3px);
+  }
+  80% {
+    transform: translateX(2px);
+  }
+}
+
+@keyframes argos-shimmer {
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes argos-ring {
+  0% {
+    opacity: 0.45;
+    transform: scale(1);
+  }
+  70%,
+  100% {
+    opacity: 0;
+    transform: scale(2.6);
+  }
+}
+
+@keyframes argos-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ── Transiciones entre páginas (View Transitions API) ────────────── */
+::view-transition-old(root) {
+  animation: argos-vt-out 160ms var(--ease-exit) both;
+}
+
+::view-transition-new(root) {
+  animation: argos-vt-in 320ms var(--ease-enter) both;
+}
+
+@keyframes argos-vt-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes argos-vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ── Reducir movimiento: todo pasa a fundido de 100 ms ────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --rise: 0px;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 100ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 100ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .skeleton::after,
+  .pulse-ring::before {
+    animation: none !important;
+  }
+
+  .lift:hover {
+    transform: none;
+  }
+
+  .fx-up,
+  .fx-scale,
+  .fx-fade {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
