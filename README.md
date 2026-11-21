@@ -44,6 +44,10 @@ Todas usan la contraseña de `ARGOS_SEED_PASSWORD` en `BACKEND/docker-compose.ym
 misma de las cuentas del "Modo demo" del mock). Solo para desarrollo: `seed` se niega a
 correr en producción.
 
+**Tu propia cuenta:** define `ARGOS_SEED_DEV_EMAIL`, `ARGOS_SEED_DEV_NAME` y
+`ARGOS_SEED_DEV_PASSWORD` en `BACKEND/.env` (no se versiona) y corre
+`docker compose up --no-deps seed`: queda como Administrador en Garrent y Costa Limpia.
+
 * **`web-demo`** (opcional): build optimizado servido por nginx, todo simulado y sin
   backend, para mostrarlo a otros: `npm run docker:demo` → http://localhost:4280.
 

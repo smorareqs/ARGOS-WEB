@@ -8,7 +8,7 @@ import { MockDemoApi } from './services/demo-api.mock';
 export const LANDING_ROUTES: Routes = [
   {
     path: '',
-    title: 'ARGOS · Cien ojos sobre cada propiedad',
+    title: 'ARGOS · Operación de alquileres de corto plazo',
     providers: [
       { provide: DemoApi, useFactory: () => (inject(MOCK_MODULES).demoRequests ? new MockDemoApi() : new HttpDemoApi()) },
     ],

@@ -72,7 +72,6 @@ export class LoginComponent {
   /** Objeto con clave por paso: el paso nuevo entra y el anterior sale. */
   protected readonly stepView = computed(() => ({ key: this.store.step() }));
   protected readonly demoOpen = signal(true);
-  /** Foco en la contraseña: los ojos del panel de marca se cierran. */
 
   constructor() {
     effect(() => {

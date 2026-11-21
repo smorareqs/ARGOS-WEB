@@ -9,7 +9,7 @@ let seq = 0;
  * con volcán, playa, lago) y hora del día. Sirve mientras no haya fotos
  * reales y como respaldo cuando una foto falla.
  *
- * `lit` enciende todas las ventanas en cascada (los "cien ojos" de Argos);
+ * `lit` enciende todas las ventanas en cascada (la propiedad "despierta");
  * las tarjetas lo activan al pasar el cursor.
  */
 @Component({
