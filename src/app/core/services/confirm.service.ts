@@ -7,10 +7,16 @@ export interface ConfirmRequest {
   readonly cancelLabel?: string;
   /** 'danger' → botón rojo a la derecha (ux-ui.md §3.5). */
   readonly tone?: 'danger' | 'primary';
+  /**
+   * Motivos sugeridos. Si se pasan, el diálogo pide un motivo obligatorio
+   * (chips + "Otro" con texto): reprogramar, ajustar existencias, corregir
+   * marcajes… quedan explicados en la bitácora.
+   */
+  readonly reasons?: readonly string[];
 }
 
 interface PendingConfirm extends ConfirmRequest {
-  readonly resolve: (ok: boolean) => void;
+  readonly resolve: (ok: boolean, reason?: string) => void;
 }
 
 /** Diálogo de confirmación imperativo: `await confirm.ask({...})`. */
@@ -21,12 +27,20 @@ export class ConfirmService {
 
   ask(req: ConfirmRequest): Promise<boolean> {
     this._current()?.resolve(false);
-    return new Promise((resolve) => this._current.set({ ...req, resolve }));
+    return new Promise((resolve) => this._current.set({ ...req, resolve: (ok) => resolve(ok) }));
   }
 
-  settle(ok: boolean): void {
+  /** Igual que `ask`, pero exige un motivo: devuelve el texto o null si se cancela. */
+  askReason(req: ConfirmRequest & { readonly reasons: readonly string[] }): Promise<string | null> {
+    this._current()?.resolve(false);
+    return new Promise((resolve) =>
+      this._current.set({ ...req, resolve: (ok, reason) => resolve(ok && reason ? reason : null) }),
+    );
+  }
+
+  settle(ok: boolean, reason?: string): void {
     const c = this._current();
     this._current.set(null);
-    c?.resolve(ok);
+    c?.resolve(ok, reason);
   }
 }

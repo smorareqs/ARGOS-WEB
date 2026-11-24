@@ -141,13 +141,37 @@ node .claude/skills/argos-redesign/scripts/panel.mjs --routes /inicio --clip "ap
 
 ## Pantallas internas
 
-| Pantalla | Ruta | Código (`src/app/features/…`) | Especificación | Datos |
-| --- | --- | --- | --- | --- |
-| Inicio | `/inicio` | `dashboard/` (priority-hero, compliance-donut, properties-map, team-ranking, upcoming-maintenance, activity-feed) | W-B1, W-B2 | simulados |
-| Propiedades y ficha | `/propiedades` | `properties/` (properties-list, property-card, property-detail, property-form) | W-C1, W-C2 | simulados |
-| Colaboradores y ficha | `/colaboradores` | `team/` (team, member-detail, invite-form, role-picker, role-strip) | W-D1, W-D2 | simulados |
-| Próximamente | itinerario, inventario, mantenimiento, reservas, áreas comunes, parqueos, rrhh, métricas, alertas, bitácora, configuración | `coming-soon/` | W-E a W-K | — |
-| Estructura | todas | `layouts/main-layout`, `shared/organisms/sidebar`, `topbar` | — | sesión real |
+Todas existen. Con la API real: acceso, perfil, Colaboradores (con su ficha), Configuración y Plataforma (fase 1), Propiedades (con edificios, checklists y su ficha) y Bitácora (fase 2), Mantenimiento, Alertas e Inicio (fase 3; en Inicio, lo que depende de tareas lleva "Muestra"), Reservas con huéspedes, depósito, inspecciones, canales e iCal (fase 4), RRHH: nómina, disciplina y configuración (fase 5), y Facturación, Integraciones, Planes y Suscripciones (fase 6). Itinerario, Inventario, Parqueos, Áreas comunes, Asistencia, Métricas y Chat usan mocks hasta que Persona B publique su API (bandera `MOCK_MODULES`; la bandeja de la campana es `notifications`). Cada una vive en `src/app/features/…` con
+`models/`, `services/` (contrato HTTP + mock), `store/` y `pages/`. Las subpantallas son
+pestañas por query param (`?tab=`), y fichas y altas son drawers (`?ver=`, `?nueva=`).
+
+| Pantalla | Ruta | Carpeta | Especificación |
+| --- | --- | --- | --- |
+| Inicio | `/inicio` | `dashboard/` | W-B1, W-B2 |
+| Propiedades | `/propiedades` (`?seccion=edificios` o `checklists`), `/propiedades/CODIGO` | `properties/` (property-cover, checklist-editor, buildings-panel, templates-panel) | W-C1 a W-C4 |
+| Acceso por enlace | `/restablecer`, `/invitacion` | `auth/` (auth-shell, password-meter) | W-A4, W-A5 |
+| Mi perfil | `/perfil` | `profile/` | Datos, contraseña, 2FA con QR, sesiones |
+| Colaboradores | `/colaboradores`, `/colaboradores/:id` | `team/` (employee-form, schedule-editor) | W-D1, W-D2 (con pestañas Nómina y Disciplina) |
+| Itinerario | `/itinerario` | `itinerary/` (week-board, task-detail, task-form) | W-E1–E4 |
+| Inventario | `/inventario` | `inventory/` (stock-form, item-form) | W-F1–F6 |
+| Mantenimiento | `/mantenimiento` | `maintenance/` (tickets-panel, ticket-detail, ticket-form, assets-panel, asset-detail, plans-panel, vendors-panel, metrics-panel y formularios) | W-G1–G5 |
+| Reservas | `/reservas` | `reservations/` (occupancy-calendar, reservation-detail, reservation-guests, deposit-panel, inspections-panel, reservation-form, guests-panel, channels-panel, channel-forms) | W-H1–H6 |
+| Áreas comunes | `/areas-comunes` | `shared-areas/` | W-I2 |
+| Parqueos | `/parqueos` | `parking/` | W-I1 |
+| RRHH | `/rrhh` | `hr/` (payroll-grid, line-panel, discipline-list, action-form, payroll-settings, period-form, employee-hr) | W-J1–J5 |
+| Métricas | `/metricas` | `metrics/` | W-K1–K2 |
+| Chat | `/chat` | `chat/` | W-M1 |
+| Alertas | `/alertas` | `alerts/` | W-L1 |
+| Bitácora | `/bitacora` | `audit/` | W-N1 |
+| Configuración | `/configuracion` (`?tab=integraciones`, `facturacion`) | `settings/`, `billing/` (billing-panel, api-keys-panel) | W-O1, W-O3, W-O4 (W-O2 = Colaboradores) |
+| Plataforma | `/plataforma/empresas`, `/planes`, `/suscripciones`, `/bitacora` | `platform/` | W-P1 a W-P4 (solo en modo plataforma) |
+| Estructura | todas | `layouts/main-layout`, `shared/organisms/sidebar`, `topbar` | — |
+
+Todas las pantallas de ux-ui.md existen.
+
+Para ver un módulo con datos de cada empresa, usa `--company Garrent` o
+`--company "Costa Limpia"` en `panel.mjs` (Parqueos solo está activo en Costa Limpia y Áreas
+comunes solo en Garrent, igual que en el seed).
 
 ## Problemas conocidos
 
@@ -160,6 +184,10 @@ node .claude/skills/argos-redesign/scripts/panel.mjs --routes /inicio --clip "ap
   `docker logs argos-web` diga "Application bundle generation complete" y repite.
 * **Git Bash convierte `/inicio` en una ruta de Windows:** antepón `MSYS_NO_PATHCONV=1` al
   comando.
+* **Overlay de error que no se va:** tras un error de plantilla, el servidor puede seguir
+  mostrando el overlay aunque ya compile. Corre `docker compose restart web`.
+* **`ng test` falla con "Vitest failed to find the runner":** ocurre en Git Bash porque la
+  ruta llega como `c:/` en minúscula. Córrelo desde PowerShell.
 * **Fotos externas:** usa Wikimedia Commons con anchos estándar (960, 1280 o 1920 en
   `thumb.wikimedia.org`), con crédito, o el CDN de Unsplash. Las páginas de búsqueda de
   Unsplash bloquean bots; no lo evadas.

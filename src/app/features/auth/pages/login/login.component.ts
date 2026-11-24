@@ -9,7 +9,8 @@ import {
   untracked,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AuthStore } from '../../store/auth.store';
+import { AuthStore, PLATFORM_CHOICE } from '../../store/auth.store';
+import { SessionStore } from '../../../../core/store/session.store';
 import { MOCK_MODULES } from '../../../../core/tokens/api.tokens';
 import { DEMO_PASSWORD, DEMO_USERS } from '../../../../core/mocks/demo-seed';
 import { BrandPanelComponent } from '../../components/brand-panel/brand-panel.component';
@@ -61,12 +62,16 @@ import { TenantMarkComponent } from '../../../../shared/atoms/tenant-mark/tenant
 export class LoginComponent {
   protected readonly store = inject(AuthStore);
   private readonly router = inject(Router);
+  private readonly session = inject(SessionStore);
   protected readonly mocks = inject(MOCK_MODULES).auth;
   protected readonly demoUsers = DEMO_USERS;
 
   /** Query params (withComponentInputBinding). */
   readonly volver = input<string | undefined>();
   readonly motivo = input<string | undefined>();
+  /** `?recuperar=1` (enlace del correo "Tu contraseña cambió") abre la recuperación. */
+  readonly recuperar = input<string | undefined>();
+  protected readonly platformChoice = PLATFORM_CHOICE;
 
   protected readonly shaking = signal(false);
   /** Objeto con clave por paso: el paso nuevo entra y el anterior sale. */
@@ -74,6 +79,9 @@ export class LoginComponent {
   protected readonly demoOpen = signal(true);
 
   constructor() {
+    effect(() => {
+      if (this.recuperar()) untracked(() => this.store.go('forgot'));
+    });
     effect(() => {
       if (this.store.errorTick() === 0) return;
       untracked(() => {
@@ -109,6 +117,9 @@ export class LoginComponent {
 
   private async enter(): Promise<void> {
     const target = this.volver();
-    await this.router.navigateByUrl(target && target.startsWith('/') ? target : '/inicio');
+    const home = this.session.home();
+    // Un destino de empresa no sirve en la administración de ARGOS (y al revés).
+    const fits = target?.startsWith('/') && !target.startsWith('//') && target.startsWith('/plataforma') === (home === '/plataforma');
+    await this.router.navigateByUrl(fits ? target! : home);
   }
 }

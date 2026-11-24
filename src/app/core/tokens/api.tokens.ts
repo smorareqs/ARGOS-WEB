@@ -10,7 +10,32 @@ import { InjectionToken } from '@angular/core';
 export const API_BASE_URL = new InjectionToken<string>('API_BASE_URL');
 
 /** Módulos con implementación mock de su `*-api.service.ts`. */
-export type MockModule = 'auth' | 'dashboard' | 'properties' | 'team' | 'demoRequests';
+export type MockModule =
+  | 'auth'
+  | 'dashboard'
+  | 'properties'
+  | 'team'
+  | 'demoRequests'
+  | 'itinerary'
+  | 'inventory'
+  | 'maintenance'
+  | 'reservations'
+  | 'sharedAreas'
+  | 'parking'
+  /** Nómina y disciplina (API de Persona A, fase 5). */
+  | 'hr'
+  /** Asistencia (marcajes): API de Persona B, fase 5. */
+  | 'attendance'
+  | 'metrics'
+  | 'alerts'
+  | 'audit'
+  | 'settings'
+  /** Bandeja de notificaciones (campana): API de Persona B, fase 3. */
+  | 'notifications'
+  /** Facturación, planes y claves API (API de Persona A, fase 6). */
+  | 'billing'
+  /** Chat interno y con huéspedes (W-M1): API de Persona B, fase 6. */
+  | 'chat';
 
 /** true = el módulo usa su mock; false = usa la API real. */
 export type MockModules = Readonly<Record<MockModule, boolean>>;

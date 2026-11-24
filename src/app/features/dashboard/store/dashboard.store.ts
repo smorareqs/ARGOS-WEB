@@ -47,30 +47,18 @@ export class DashboardStore {
     }
   }
 
-  /** Reconocer una alerta: se quita al instante y se ofrece deshacer (6 s). */
+  /** Reconocer una alerta: se quita del hero (sigue abierta en Alertas hasta resolverse). */
   async acknowledge(alert: DashboardAlert): Promise<void> {
     const before = this._data();
     if (!before) return;
-    this.patchAlerts((list) => list.filter((a) => a.id !== alert.id), -1);
+    this.patchAlerts((list) => list.filter((a) => a.id !== alert.id), 0);
     try {
       await this.api.acknowledge(alert.id);
-      this.toast.success('Alerta reconocida.', {
-        label: 'Deshacer',
-        run: () => void this.undo(alert, before.alerts.indexOf(alert)),
-      });
+      this.toast.success('Alerta reconocida: el equipo ve que ya la estás atendiendo.');
     } catch (err) {
       this._data.set(before);
       this.toast.error(toApiError(err).detail);
     }
-  }
-
-  private async undo(alert: DashboardAlert, index: number): Promise<void> {
-    this.patchAlerts((list) => {
-      const next = [...list];
-      next.splice(Math.max(0, index), 0, alert);
-      return next;
-    }, +1);
-    await this.api.restore(alert.id).catch(() => undefined);
   }
 
   private patchAlerts(fn: (a: readonly DashboardAlert[]) => readonly DashboardAlert[], delta: number): void {

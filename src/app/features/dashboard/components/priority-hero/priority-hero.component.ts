@@ -30,13 +30,19 @@ const KIND_ICON: Record<AlertKind, IconName> = {
       <div class="relative z-[2] flex flex-col gap-6 lg:flex-row lg:items-stretch lg:gap-9">
         <div class="flex shrink-0 flex-col justify-center lg:w-[210px] lg:border-r lg:border-white/12 lg:pr-8">
           <div class="text-[11px] uppercase tracking-[1.6px] text-white/60">Requiere tu atención</div>
+          <!-- Sin altas, el número grande pasa a ser el total: un "0" bajo "Requiere tu atención" se contradice. -->
+          @let urgent = high() ?? alerts().length;
           <div class="mt-2 flex items-baseline gap-3">
             <span class="font-display text-[64px] font-semibold leading-none text-secondary-light">
-              <app-count-up [value]="alerts().length" />
+              <app-count-up [value]="urgent || total()" />
             </span>
-            <span class="text-[13px] leading-snug text-white/75">de prioridad<br />alta</span>
+            @if (urgent || !total()) {
+              <span class="text-[13px] leading-snug text-white/75">de prioridad<br />alta</span>
+            } @else {
+              <span class="text-[13px] leading-snug text-white/75">{{ total() === 1 ? 'alerta' : 'alertas' }}<br />{{ total() === 1 ? 'activa' : 'activas' }}</span>
+            }
           </div>
-          <div class="mt-2.5 text-[12px] text-white/60">{{ total() }} alertas activas en total</div>
+          <div class="mt-2.5 text-[12px] text-white/60">{{ urgent || !total() ? total() + ' alertas activas en total' : 'Ninguna de prioridad alta' }}</div>
         </div>
 
         <div class="flex min-w-0 flex-1 flex-col justify-center gap-2.5 xl:max-w-[600px]">
@@ -110,6 +116,8 @@ const KIND_ICON: Record<AlertKind, IconName> = {
 export class PriorityHeroComponent {
   readonly alerts = input.required<readonly DashboardAlert[]>();
   readonly total = input.required<number>();
+  /** Abiertas de severidad alta (API real); sin dato, las que se muestran. */
+  readonly high = input<number | null>(null);
   readonly canManage = input<boolean>(false);
 
   readonly act = output<DashboardAlert>();

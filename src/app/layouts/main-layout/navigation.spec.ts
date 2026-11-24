@@ -29,7 +29,7 @@ describe('buildNav (menú por permisos y banderas, ux-ui.md §4.2)', () => {
 
   it('colaborador de limpieza no ve Colaboradores, Bitácora ni Alertas', () => {
     const nav = labels('cleaner', { reservations: true, parking: true });
-    expect(nav).toEqual(['Inicio', 'Propiedades', 'Itinerario', 'Inventario', 'Mantenimiento']);
+    expect(nav).toEqual(['Inicio', 'Propiedades', 'Itinerario', 'Inventario', 'Mantenimiento', 'Chat']);
   });
 
   it('no deja secciones vacías', () => {

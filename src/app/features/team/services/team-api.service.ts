@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, firstValueFrom } from 'rxjs';
-import { API_BASE_URL } from '../../../core/tokens/api.tokens';
+import { API_BASE_URL, MOCK_MODULES } from '../../../core/tokens/api.tokens';
 import { SessionStore } from '../../../core/store/session.store';
 import { toApiError } from '../../../core/http/api-error';
 import { RoleKey } from '../../../core/auth/permissions';
@@ -27,6 +27,7 @@ export class HttpTeamApi extends TeamApi {
   private readonly http = inject(HttpClient);
   private readonly session = inject(SessionStore);
   private readonly api = `${inject(API_BASE_URL)}/api/v1`;
+  private readonly mocks = inject(MOCK_MODULES);
 
   private get base(): string {
     return `${this.api}/tenants/${this.session.tenant()?.id}`;
@@ -41,7 +42,10 @@ export class HttpTeamApi extends TeamApi {
   roles() {
     return this.call(this.http.get<Page<Role>>(`${this.base}/roles`));
   }
-  propertyOptions() {
+  propertyOptions(): Promise<Page<PropertyOption>> {
+    // Las propiedades reales llegan en la fase 2; mientras su módulo esté
+    // simulado no se mezclan ids de demostración con invitaciones reales.
+    if (this.mocks.properties) return Promise.resolve({ items: [], next_cursor: null });
     return this.call(
       this.http.get<Page<PropertyOption>>(`${this.api}/properties`, { params: { fields: 'id,code,name', limit: 500 } }),
     );

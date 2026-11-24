@@ -50,7 +50,12 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
           <app-role-picker [roles]="roles()" [(value)]="role" label="Rol de la persona invitada" />
         </div>
 
-        @if (scoped()) {
+        @if (scoped() && !properties().length) {
+          <p class="reveal-soft rounded-tile bg-background px-4 py-3 text-[12px] leading-snug text-text-body">
+            Este rol solo verá las propiedades que le asignes. Las asignas desde la ficha de cada propiedad cuando la persona acepte.
+          </p>
+        }
+        @if (scoped() && properties().length) {
           <div class="reveal-soft">
             <div class="mb-2 flex items-baseline justify-between">
               <span class="text-[10.5px] uppercase tracking-[1px] text-text-secondary">Propiedades asignadas</span>

@@ -167,6 +167,204 @@ Mientras no haya fotos reales (S3, fase 2), cada propiedad del panel tiene una p
 hotel), entorno guatemalteco (ciudad, colonial con volcán, playa, lago) y hora del día. Cuando
 existan fotos, la portada quedará como respaldo si una foto falla.
 
+## Fase 1 con la API real (2026-11-21)
+
+* **Enlaces de correo** (`/restablecer`, `/invitacion`): el mismo panel partido del login (`app-auth-shell`). El token se quita de la barra de direcciones al leerlo. La invitación muestra el logo de la empresa, el rol y quién invita antes de pedir datos; si la persona ya tiene cuenta, solo pide su contraseña (y su código 2FA).
+* **Mi perfil** (`/perfil`, pestañas por `?tab=`): datos, seguridad (contraseña con medidor de fuerza y 2FA con QR generado en el navegador, clave en grupos de 4 para copiar) y sesiones por dispositivo con "Esta sesión" marcada.
+* **Modo plataforma**: "Administración ARGOS" aparece como una empresa más en "Elige una empresa" y en el selector de la barra superior, con el símbolo de ARGOS. Su menú solo tiene Empresas y Bitácora de plataforma; las rutas de empresa redirigen a `/plataforma`.
+* **Configuración**: los módulos del plan son de solo lectura (check o candado); los roles del sistema muestran la matriz bloqueada con "Duplicar"; los roles propios se renombran en el mismo título y su matriz bloquea los permisos que la persona no tiene.
+
+## Fase 2 con la API real (2026-11-21)
+
+Investigación (skill `argos-redesign`): páginas de ayuda públicas de Besty (ficha de anuncio),
+Hospitable (tareas y equipo) y Breezeway (perfil de propiedad y plantillas), más el editor de
+anuncios de Airbnb. Hostaway respondió 403, Hometime 404 y Guesty bloquea navegadores
+automáticos: no se evadieron. Reglas en común que se adaptaron:
+
+* La ficha se abre con identidad clara: volver, nombre y dirección, y un selector para saltar a
+  otra propiedad ("Switch listing" de Besty).
+* Secciones cortas con un resumen legible y "Editar" a mano (editor de anuncios de Airbnb), en
+  vez de un formulario enorme siempre abierto.
+* El acceso (llaves, códigos) vive aparte y dice quién lo ve (Breezeway separa el acceso del
+  huésped del acceso del equipo).
+* El checklist se arma con título, descripción y secciones con puntos, y se revisa como lo ve el
+  colaborador ("Preview tasks" de Hospitable).
+* Las personas asignadas van con avatar y en orden.
+
+Decisiones:
+
+* **Sin estado de hoy inventado.** Mientras no existan tareas, la lista muestra lo que sí se sabe
+  y lo que le falta a cada propiedad para operar (sin asignados, sin checklist, sin acceso) como
+  aviso en la portada y como chips de filtro. El estado del día vuelve cuando llegue la API de B.
+* **Portada**: la foto subida (S3, firmada) o, si no hay, la escena generada con el entorno
+  deducido de la zona (playa, lago, colonial, ciudad).
+* **Edificios y Checklists son pestañas** de Propiedades (`?seccion=`), no pantallas sueltas.
+* **Editor de checklist** en drawer ancho: secciones e ítems que se arrastran (y flechas para
+  teclado y móvil), "Foto" y "Antes y después" como interruptores, y a la derecha la vista
+  previa en un marco de teléfono. "Duplicar" crea una copia y la abre.
+* **Ficha de colaborador** con la misma cabecera teal del drawer de Colaboradores; el horario se
+  edita sobre una regla de 5:00 a 23:00 con barras por día.
+* **Selector de personas** (`app-user-picker`): búsqueda, avatar, elegidas primero. Sirve también
+  para propiedades (código en lugar de avatar).
+* Íconos de control nuevos: `pencil`, `grip`, `camera`, `checklist`, `chevron-up` (mismo trazo).
+
+## Fase 3 con la API real (2026-11-22)
+
+Mantenimiento, Alertas e Inicio pasaron a datos reales con los patrones ya aprobados de la tabla
+de abajo (columnas por estado de Linear para el tablero, una serie por gráfico de Stripe para
+Indicadores). Decisiones:
+
+* **El tablero solo arrastra para iniciar.** Asignar pide a quién, resolver pide qué se hizo y
+  cerrar es de administración: esos pasos se hacen en la ficha, donde caben los datos. Arrastrar
+  a otra columna que no sea "En curso" no hace nada.
+* **Ficha de incidencia en drawer** con folio (#15), estado, urgencia, fotos del reporte y de la
+  solución (etiqueta "Solución"), responsables, costo editable, "Qué se hizo" y una línea de
+  tiempo en frases ("Sebas M asignó la incidencia · Ana López · nota"). Las acciones van fijas
+  abajo y cambian con el estado.
+* **Lugar**: el código de propiedad va en monoespaciada (TB-1102) y el nombre de edificio en la
+  letra normal ("Torre Botánica · Edificio completo"); la mono solo se usa en códigos y folios.
+* **Fotos** con `app-photo-picker` (miniaturas, quitar, máximo configurable) en el reporte y al
+  resolver; los documentos del activo se adjuntan desde la ficha (PDF o imagen).
+* **Indicadores**: el gasto dice su moneda en la etiqueta ("Gasto del mes (Q)"); la línea de
+  resolución omite meses sin incidencias resueltas (dibujarlos en 0 h hundiría la tendencia) y,
+  con menos de dos meses, lo explica en lugar de mostrar un punto suelto.
+* **Inicio con datos parciales**: lo real (alertas, incidencias, preventivos, mapa, actividad) se
+  muestra normal; lo que aún depende de tareas y reservas lleva la etiqueta "Muestra" y una nota
+  arriba. Sin alertas de prioridad alta, el número grande del héroe pasa a ser el total ("2
+  alertas activas · Ninguna de prioridad alta") para no mostrar un 0 bajo "Requiere tu atención".
+* **Mapa**: las coordenadas reales se proyectan al mapa estilizado por cercanía a seis lugares
+  dibujados (Atitlán, Antigua, zonas de la capital, Monterrico, Puerto San José); los pines que se
+  enciman se reparten en círculo.
+* **Campana**: abre una bandeja (`app-notification-tray`) con "Sin leer" y "Antes", marcar todo
+  leído y enlace al panel de alertas. Mientras B no publique su API muestra la etiqueta
+  "Simulado".
+* **Alertas** sin "deshacer": reconocer y resolver son reales y el aviso explica que, si la causa
+  sigue, el sistema la vuelve a levantar.
+* Íconos de control nuevos (mismo trazo): `droplet`, `wrench`, `bolt`, `wind`, `plug`, `brush`,
+  `sofa`, `file`, `upload` (categorías de activo y documentos).
+
+## Fase 4 con la API real (2026-11-22)
+
+Reservas (W-H1 a W-H6) pasó a datos reales sobre los patrones ya aprobados (multicalendario de
+Guesty y Hostaway, ficha en drawer como Mantenimiento). Decisiones:
+
+* **Calendario que llena el ancho**: muestra 24 días como mínimo y más si la pantalla da; las
+  columnas se estiran para no dejar una franja vacía a la derecha. Arrastrar sobre días libres
+  abre "Nueva reserva" con ese rango; la barra dice el canal por color y lo que falta por rayado.
+* **Ficha con cuatro pestañas** (Huéspedes, Depósito, Inspecciones, Historial) y las acciones del
+  estado fijas abajo (confirmar, check-in, check-out, cancelar con motivo, no llegó, reenviar).
+* **Registro del huésped** en la misma ficha: documento y dos casillas de foto (frente y reverso).
+  Las fotos no se muestran en miniatura: "Frente" y "Reverso" abren la URL firmada en otra pestaña y
+  queda en la bitácora; abajo se dice cuándo se borran ("Se borran el 19 feb 2027").
+* **Depósito como libro**: monto, recibido, devuelto, retenido y saldo arriba; movimientos con
+  flecha y color abajo. El formulario solo ofrece lo que se puede hacer (recibir, retener, devolver)
+  y sugiere el monto.
+* **Hallazgos** con gravedad en chips, cargo al depósito y "Abrir incidencia en Mantenimiento" (el
+  hallazgo enlaza a su incidencia).
+* **Canales en tarjetas** con sus reglas en palabras ("Depósito de Q 1,200", "Entrada y salida
+  automáticas") y los calendarios iCal en tabla con la última lectura o el error del canal.
+* Íconos de control nuevos: `arrow-down`, `arrow-up` (movimientos) y `wallet` (depósito).
+
+## Fase 5 con la API real (2026-11-23)
+
+Nómina y disciplina (W-J2 a W-J5 y las pestañas de RRHH de W-D2) pasaron a datos reales. Referencias:
+la nómina por período de Gusto y Rippling (lista de corridas con estado y total, y una planilla
+donde se corrige antes de aprobar) y el expediente de BambooHR. Decisiones:
+
+* **Períodos como filas con el líquido a la derecha**: nombre, fechas, estado y si paga aguinaldo o
+  Bono 14. En móvil el estado y el monto bajan a su propia fila para no apretar el nombre.
+* **Planilla tipo hoja**: una fila por colaborador, columnas con cifras tabulares y totales al pie.
+  Solo en revisión las celdas son editables; lo corregido a mano se subraya y la fila dice "N
+  cambios". Al cambiar días, horas o limpiezas la base se recalcula en vivo.
+* **Barra de estado del período** arriba de la planilla con el líquido, el IGSS y solo las acciones
+  que tocan (calcular, pasar a revisión, volver a borrador, cerrar, Excel, boletas). Cerrar pide
+  confirmación con las cifras y dice qué va a pasar (correos, ya no se cambia).
+* **Ficha de la línea** en drawer con la boleta como se va a imprimir, la explicación del Bono 14 o
+  aguinaldo en palabras ("12 meses: 2 con nómina en ARGOS y 10 estimados") y el historial de
+  correcciones.
+* **Aviso de la fuente**: mientras no haya marcajes ni itinerario, la planilla dice que días y horas
+  salen del horario y que las limpiezas se corrigen en revisión.
+* **Disciplina** en tarjetas con el tipo en color, las fechas de suspensión, los adjuntos y el acuse
+  (con la nota del colaborador) o "Esperando acuse".
+* La boleta PDF repite la marca: banda teal con el nombre de la empresa, devengos y deducciones en
+  dos columnas, líquido destacado y líneas de firma.
+
+## Fase 6 con la API real (2026-11-23)
+
+Facturación (W-O4), Integraciones, Planes (W-P2) y Suscripciones (W-P3) usan la API real; el Chat
+(W-M1) usa datos simulados hasta la API de Persona B. Referencias: la facturación de Linear y Notion
+(plan con uso y límites, historial de facturas), el centro de pagos de Stripe (suscripciones con
+estado y cobros fallidos) y las bandejas de Airbnb y Front para el chat (lista, conversación y
+contexto de la reserva). Decisiones:
+
+* **Plan en la tarjeta teal** que ya existía: nombre, precio por ciclo, estado y barras de uso frente
+  al límite (ámbar desde el 85 %); "sin límite" cuando el plan no tiene tope.
+* **La deuda se dice arriba y con la acción al lado**: franja ámbar (pago vencido, con la fecha en que
+  pasa a solo lectura) o roja (solo lectura) con "Pagar Q …". En todo el panel, el mismo aviso arriba
+  del contenido lleva a Facturación a quien puede pagar y le dice al resto a quién acudir.
+* **Cambiar de plan en un drawer** con mensual/anual, cada plan como tarjeta con límites y
+  funcionalidades; el actual y los que no alcanzan para el uso quedan deshabilitados con el motivo, y
+  se avisa qué módulos se apagarían. Confirmar dice cuánto se cobra.
+* **Clave API visible una sola vez** en una franja con "Copiar" y "Ya la guardé"; la lista solo
+  muestra el prefijo y el último uso.
+* **Chat a tres columnas** (lista, conversación, reserva) que en móvil es lista o conversación con
+  "volver". Burbujas teal para lo propio y blancas para lo recibido, separadas por día; no leídos con
+  el color de acción; respuestas rápidas como chips sobre el campo de texto.
+* **Suscripciones** con cuatro indicadores (al día, en prueba, vencidas, suspendidas) y una tabla
+  ordenada por urgencia.
+
+## Navegación flotante y color de acción (2026-11-22)
+
+* **Sidebar flotante** (lo pidió Persona A): la navegación ya no ocupa una columna; es un panel teal
+  que sale del botón de menú de la topbar, a la izquierda, igual que la bandeja de notificaciones
+  sale de la campana a la derecha. En escritorio se asoma al pasar el cursor por el botón (140 ms) y
+  se fija con un clic; se cierra al navegar, con Escape o con clic fuera. En móvil abre con velo. El
+  contenido usa el 100 % del ancho y la topbar lleva el logo. Referencia: el sidebar que se asoma de
+  Notion y Linear cuando está oculto.
+* **Color de acción terracota (propuesta, por confirmar)**: el botón principal dorado con texto
+  blanco daba 3.0:1 (no cumple WCAG AA para texto de 12–15 px) y competía con los secundarios teal
+  sólidos. Se evaluaron cuatro opciones sobre pantallas reales (tablero
+  `tablero-botones.png` en el scratchpad de la sesión): dorado actual, terracota, naranja vivo
+  (3.0:1, se lee "promoción") y terracota con secundarios suaves. Quedó la última: principal
+  `--color-action: #b5582a` (barro de las fachadas de Antigua, 4.8:1), secundarios en teal lavado
+  con texto teal (10.8:1) y enlaces de acción en terracota. Un solo color sólido por pantalla, como
+  Airbnb o Linear. El dorado sigue como acento de marca (indicador del menú, etiquetas, gráficos).
+
+## Pantallas internas (fases 2 a 5)
+
+Construidas con el skill `argos-redesign`. Lo que se tomó de cada referencia (patrones, no
+diseños):
+
+| Patrón | Referencia | Dónde |
+| --- | --- | --- |
+| Filas por persona, columnas por día y "Sin asignar" arriba; arrastrar para reasignar | Breezeway, Coast | Itinerario · semana |
+| Columnas por estado con punto de color y contador; tarjetas solo con lo que decide el siguiente paso | Linear | Itinerario · hoy, Mantenimiento |
+| Multicalendario: filas por propiedad, barras que empiezan y terminan a media celda, color por canal | Guesty, Hostaway | Reservas |
+| Suministros con mínimo y alerta; reposición ligada a la limpieza | Hospitable, Turno | Inventario |
+| Selector de período, cifras clave, una serie por gráfico y la tabla que explica el número | Stripe | Métricas, Indicadores |
+
+Decisiones:
+
+* **Pestañas con subrayado** (`app-tabs`) para las subpantallas de un módulo; el control
+  segmentado queda para alternar vistas del mismo dato (semana/hoy, tablero/tabla).
+* **Todo el estado de vista vive en la URL** (`?tab=`, `?ver=`, `?semana=`): se puede
+  compartir un enlace a una tarea, una reserva o un período de nómina.
+* **Mover o corregir pide motivo.** `ConfirmService.askReason` muestra chips con motivos
+  frecuentes y "Otro"; el motivo queda en la línea de tiempo y en la bitácora.
+* **Colores de canal** (Airbnb, Booking.com, Vrbo, venta directa) validados con la guía de
+  visualización: banda de luminosidad, croma, separación con daltonismo y contraste. Barras
+  tenues con borde de color y texto oscuro; las reservas por completar van rayadas.
+* **Gráficos** (`app-bar-chart`, `app-line-chart`): una sola serie en teal, el dato a
+  destacar en dorado, rejilla tenue, tooltip al pasar el cursor y tabla oculta para lectores
+  de pantalla. Sin ejes dobles.
+* **Parqueos como plano** del nivel, con la placa de cada espacio: así lo ve seguridad.
+* **Áreas comunes con foto real** del área; la agenda del día marca en rayado las horas en
+  que el área está cerrada.
+* **Ilustraciones nuevas** (21 en total): `inventory`, `parking`, `pool` y `payroll`, en el
+  mismo estilo. Se probaron a 40, 56 y 96 px sobre arena y menta.
+* Los íconos de línea siguen en controles, navegación y en los stat tiles, como estaba
+  aprobado.
+
 ## Pendiente de decidir
 
 * **Tipografía de la app:** la web ya usa Plus Jakarta Sans; la app sigue en EB Garamond +

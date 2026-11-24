@@ -1,21 +1,20 @@
 import { Routes } from '@angular/router';
-import { inject } from '@angular/core';
-import { MOCK_MODULES } from '../../core/tokens/api.tokens';
-import { HttpPropertiesApi, PropertiesApi } from './services/properties-api.service';
-import { MockPropertiesApi } from './services/properties-api.mock';
 
-/** Rutas de Propiedades (W-C1; la ficha W-C2 se agrega aquí como `:code`). */
+/**
+ * Rutas de Propiedades: la lista con sus subpantallas por `?seccion=`
+ * (W-C1 propiedades, W-C3 edificios, W-C4 checklists) y la ficha (W-C2) en
+ * `/propiedades/CODIGO`.
+ */
 export const PROPERTIES_ROUTES: Routes = [
   {
     path: '',
     data: { title: 'Propiedades' },
-    providers: [
-      {
-        provide: PropertiesApi,
-        useFactory: () => (inject(MOCK_MODULES).properties ? new MockPropertiesApi() : new HttpPropertiesApi()),
-      },
-    ],
     loadComponent: () =>
       import('./pages/properties-list/properties-list.component').then((m) => m.PropertiesListComponent),
+  },
+  {
+    path: ':code',
+    data: { title: 'Ficha de propiedad' },
+    loadComponent: () => import('./pages/property-page/property-page.component').then((m) => m.PropertyPageComponent),
   },
 ];

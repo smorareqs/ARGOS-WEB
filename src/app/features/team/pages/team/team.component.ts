@@ -131,6 +131,10 @@ export class TeamComponent {
     this.setParam('ver', m.id);
   }
 
+  protected openFicha(m: Member): void {
+    void this.router.navigate(['/colaboradores', m.id]);
+  }
+
   protected closeMember(open: boolean): void {
     if (!open) this.setParam('ver', null);
   }

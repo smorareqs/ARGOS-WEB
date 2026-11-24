@@ -5,7 +5,7 @@
   [subtitle]="
     store.loading()
       ? 'Cargando a tu equipo…'
-      : s.active + ' con acceso · ' + s.pending + ' invitaciones pendientes' + (s.suspended ? ' · ' + s.suspended + ' sin acceso' : '')
+      : s.active + ' con acceso · ' + s.pending + (s.pending === 1 ? ' invitación pendiente' : ' invitaciones pendientes') + (s.suspended ? ' · ' + s.suspended + ' sin acceso' : '')
   "
 >
   <app-button *argosCan="'users.manage'" variant="primary" (pressed)="openInvite()">
@@ -168,6 +168,11 @@
       (revokeSessions)="store.revokeSessions(m)"
     />
   }
+  <div drawer-footer class="material-glass flex justify-end gap-2.5 border-t border-divider px-6 py-4">
+    @if (selected(); as m) {
+      <app-button variant="secondary" (pressed)="openFicha(m)">Abrir ficha <app-icon name="arrow-right" [size]="16" /></app-button>
+    }
+  </div>
 </app-drawer>
 
 <!-- Invitar -->

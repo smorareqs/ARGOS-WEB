@@ -37,6 +37,7 @@ const ICONS = {
   'chevron-right': `<path d="M9.5 6l6 6-6 6" ${S}/>`,
   'chevron-left': `<path d="M14.5 6l-6 6 6 6" ${S}/>`,
   'chevron-down': `<path d="M6 9.5l6 6 6-6" ${S}/>`,
+  'chevron-up': `<path d="M6 14.5l6-6 6 6" ${S}/>`,
   'chevron-up-down': `<path d="M8 9.5l4-4 4 4M8 14.5l4 4 4-4" ${S}/>`,
   plus: `<path d="M12 5v14M5 12h14" ${S}/>`,
   x: `<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ${S}/>`,
@@ -50,6 +51,10 @@ const ICONS = {
   list: `<path d="M9 6.5h11M9 12h11M9 17.5h11" ${S}/><circle cx="4.5" cy="6.5" r="1.1" fill="currentColor"/><circle cx="4.5" cy="12" r="1.1" fill="currentColor"/><circle cx="4.5" cy="17.5" r="1.1" fill="currentColor"/>`,
   filter: `<path d="M4 7h9M17 7h3M4 17h3M11 17h9" ${S}/><circle cx="15" cy="7" r="2" ${S}/><circle cx="9" cy="17" r="2" ${S}/>`,
   more: `<circle cx="5.5" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="18.5" cy="12" r="1.6" fill="currentColor"/>`,
+  pencil: `<path d="M4 20l1-4.2L15.6 5.2a1.9 1.9 0 012.7 0l.5.5a1.9 1.9 0 010 2.7L8.2 19 4 20zM13.5 7.3l3.2 3.2" ${S}/>`,
+  grip: `<circle cx="9" cy="6" r="1.4" fill="currentColor"/><circle cx="15" cy="6" r="1.4" fill="currentColor"/><circle cx="9" cy="12" r="1.4" fill="currentColor"/><circle cx="15" cy="12" r="1.4" fill="currentColor"/><circle cx="9" cy="18" r="1.4" fill="currentColor"/><circle cx="15" cy="18" r="1.4" fill="currentColor"/>`,
+  camera: `<path d="M4 8.5A1.5 1.5 0 015.5 7h2.3l1.5-2.3h5.4L16.2 7h2.3A1.5 1.5 0 0120 8.5v9.5a1.5 1.5 0 01-1.5 1.5h-13A1.5 1.5 0 014 18z" ${S}/><circle cx="12" cy="13" r="3.4" ${S}/>`,
+  checklist: `<path d="M4 6.5l1.6 1.6L8.5 5.2M4 12.5l1.6 1.6 2.9-2.9M4 18.5l1.6 1.6 2.9-2.9M11.5 7h8.5M11.5 13h8.5M11.5 19h8.5" ${S}/>`,
   'map-pin': `<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0113 0c0 5.4-6.5 11-6.5 11z" ${S}/><circle cx="12" cy="10" r="2.4" ${S}/>`,
   bed: `<path d="M3 18.5v-7A1.5 1.5 0 014.5 10h15a1.5 1.5 0 011.5 1.5v7M3 15h18M3 18.5V20M21 18.5V20M6 10V7.5A1.5 1.5 0 017.5 6h9A1.5 1.5 0 0118 7.5V10" ${S}/>`,
   bath: `<path d="M4 12h16v2a5 5 0 01-5 5H9a5 5 0 01-5-5zM6.5 12V6.5a2 2 0 013.7-1M7.5 19l-1 1.8M16.5 19l1 1.8" ${S}/>`,
@@ -78,6 +83,20 @@ const ICONS = {
   wifi: `<path d="M2.5 9a14 14 0 0119 0M5.5 12.3a9.5 9.5 0 0113 0M8.5 15.5a5 5 0 017 0" ${S}/><circle cx="12" cy="18.6" r="1.1" fill="currentColor"/>`,
   sun: `<circle cx="12" cy="12" r="4" ${S}/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" ${S}/>`,
   moon: `<path d="M19.5 14.5A8 8 0 019.5 4.5a8 8 0 1010 10z" ${S}/>`,
+  // Fase 3: categorías de activos y documentos (mantenimiento).
+  droplet: `<path d="M12 3.5s-6 6.4-6 10.8a6 6 0 0012 0C18 9.9 12 3.5 12 3.5z" ${S}/><path d="M9 14.5a3 3 0 003 3" ${S}/>`,
+  wrench: `<path d="M14.6 5.4a4 4 0 00-5.2 5.1l-5.6 5.6a1.8 1.8 0 002.5 2.5l5.6-5.6a4 4 0 005.1-5.2l-2.6 2.6-2.4-.5-.5-2.4z" ${S}/>`,
+  bolt: `<path d="M13 3L5.5 13.5H12L11 21l7.5-10.5H12z" ${S}/>`,
+  wind: `<path d="M3.5 9h11a2.8 2.8 0 10-2.8-2.8M3.5 15h14.5a2.8 2.8 0 11-2.8 2.8M3.5 12h7" ${S}/>`,
+  plug: `<path d="M8.5 3.5v4.5M15.5 3.5v4.5M6 8h12v3a6 6 0 01-12 0zM12 17v3.5" ${S}/>`,
+  brush: `<path d="M14.5 4.5l5 5-7.3 7.3-5-5zM7.2 11.8l-1.9 1.9a3 3 0 00-.8 2.4l.3 2.6a1 1 0 001.1.9l2.4-.2a3 3 0 001.9-.9l2-2" ${S}/>`,
+  sofa: `<path d="M5 11V8.5A2.5 2.5 0 017.5 6h9A2.5 2.5 0 0119 8.5V11M3.5 13.5a2 2 0 014 0V15h9v-1.5a2 2 0 014 0V18a1.5 1.5 0 01-1.5 1.5H5A1.5 1.5 0 013.5 18zM6 19.5V21M18 19.5V21" ${S}/>`,
+  file: `<path d="M13.5 3.5H7A1.5 1.5 0 005.5 5v14A1.5 1.5 0 007 20.5h10a1.5 1.5 0 001.5-1.5V8.5zM13.5 3.5v5h5M9 13h6M9 16.5h4" ${S}/>`,
+  upload: `<path d="M12 15.5V4M7.5 8.5L12 4l4.5 4.5M4.5 15v3.5A1.5 1.5 0 006 20h12a1.5 1.5 0 001.5-1.5V15" ${S}/>`,
+  // Fase 4 (reservas): movimientos del depósito.
+  'arrow-down': `<path d="M12 5v14M6.5 13.5L12 19l5.5-5.5" ${S}/>`,
+  'arrow-up': `<path d="M12 19V5M6.5 10.5L12 5l5.5 5.5" ${S}/>`,
+  wallet: `<path d="M16 5H5a1.5 1.5 0 0 0-1.5 1.5V18A1.5 1.5 0 0 0 5 19.5h14a1.5 1.5 0 0 0 1.5-1.5V9A1.5 1.5 0 0 0 19 7.5H4" ${S}/><path d="M16.5 13.5H18" ${S}/>`,
 } as const;
 
 export type IconName = keyof typeof ICONS;

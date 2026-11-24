@@ -10,6 +10,7 @@ tomadas: no se vuelven a proponer alternativas salvo que lo pida.
 | 1 (20-11-2026) | Degradados oscuros con brillo, decoración SVG abstracta, el motivo de "los 100 ojos" de Argos Panoptes ("turbio"), botones en píldora. Preguntó si de verdad se habían estudiado referencias. | Investigación real de sitios; logo de la casa con greca; botones de 8 px; fotos reales. |
 | 2 (21-11-2026) | EB Garamond + Verdana, fondos blancos planos ("demasiado blanco"), íconos de línea genéricos ("demasiado AI"), avatares con iniciales. | **Login aprobado por completo** (formulario a la izquierda, fotos reales que rotan a la derecha). Landing con Plus Jakarta, fondos crema/blanco/teal con curvas de nivel, foto en arco, ilustraciones propias. |
 | 3 (21-11-2026) | Íconos de stock dentro de tarjetas, letras (G/C/L) como marca de empresa, cabecera crema sobre crema "que casi no se mira". | Plus Jakarta en toda la web; DiceBear Notionists para personas; logos de empresa (`app-tenant-mark`); ilustraciones también en tarjetas; cabecera blanca con filete. "Ahora sí me gusta." |
+| 4 (22-11-2026) | Sidebar fijo que se come ancho de pantalla. | Navegación como panel flotante que sale del botón de menú de la topbar; el contenido usa siempre el 100 % del ancho. |
 
 ## Reglas que salen de ahí
 
@@ -36,6 +37,8 @@ tomadas: no se vuelven a proponer alternativas salvo que lo pida.
 10. **Animación con propósito**: cada animación cuenta algo del producto (checklist que se
     completa, cambio de empresa, barrido de alertas). Siempre con alternativa para "reducir
     movimiento".
+11. **La navegación flota**: el menú sale de la topbar y no ocupa columna; nada fijo a los lados
+    del contenido.
 
 ## Lo que se lee "hecho con IA" (evitar)
 

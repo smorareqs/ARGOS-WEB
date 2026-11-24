@@ -66,3 +66,8 @@ export const ROLE_ICON: Record<RoleKey, IconName> = {
   owner: 'home',
   guest: 'guests',
 };
+
+/** Ícono del rol; los roles personalizados usan uno genérico. */
+export function roleIcon(key: string): IconName {
+  return (ROLE_ICON as Record<string, IconName>)[key] ?? 'badge';
+}

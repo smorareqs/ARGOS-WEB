@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, input, model } from '@angular/core';
 import { IconComponent } from '../../../../shared/atoms/icon/icon.component';
 import { SpinnerComponent } from '../../../../shared/atoms/spinner/spinner.component';
-import { ROLE_ICON, Role } from '../../models/team.model';
+import { Role, roleIcon } from '../../models/team.model';
 
 /** Lista de roles como tarjetas de opción única con su descripción. */
 @Component({
@@ -21,7 +21,7 @@ import { ROLE_ICON, Role } from '../../models/team.model';
           (click)="value.set(r.key)"
         >
           <span class="ico flex h-9 w-9 shrink-0 items-center justify-center rounded-sm">
-            <app-icon [name]="icon[r.key]" [size]="17" />
+            <app-icon [name]="icon(r.key)" [size]="17" />
           </span>
           <span class="min-w-0 flex-1">
             <span class="block text-[13px] font-bold text-primary">{{ r.name }}</span>
@@ -56,5 +56,5 @@ export class RolePickerComponent {
   readonly pending = input<boolean>(false);
   readonly label = input<string>('Rol');
 
-  protected readonly icon = ROLE_ICON;
+  protected readonly icon = roleIcon;
 }

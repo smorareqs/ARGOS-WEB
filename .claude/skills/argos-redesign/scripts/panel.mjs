@@ -45,7 +45,7 @@ const scale = +(args.scale ?? 1);
 const page = await openBrowser({ width: 1440, height: 900, scale });
 
 async function capture(route, suffix) {
-  if (args['hide-notes']) await page.evaluate(`document.querySelectorAll('app-demo-data-note').forEach((n) => n.remove())`);
+  if (args['hide-notes']) await page.evaluate(`document.querySelectorAll('app-demo-data-note, .sim-note, .sim, .sim-tag').forEach((n) => n.remove())`);
   await sleep(600);
   const file = join(out, `${slug(route)}-${suffix}.png`);
   if (args.clip) {

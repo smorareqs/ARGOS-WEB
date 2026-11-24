@@ -17,7 +17,11 @@ export type SpotIconName =
   | 'sessions'
   | 'cleaning'
   | 'maintenance'
-  | 'arrivals';
+  | 'arrivals'
+  | 'inventory'
+  | 'parking'
+  | 'pool'
+  | 'payroll';
 
 let nextId = 0;
 
@@ -229,6 +233,63 @@ let nextId = 0;
               <circle cx="50" cy="20" r="7" fill="#C5873C" />
               <circle cx="50" cy="20" r="2.4" fill="#fff" />
               <path d="M50 27v21M50 40h4.5M50 45h5.5" stroke-width="2.4" />
+            </g>
+          }
+          @case ('inventory') {
+            <!-- Inventario: toallas dobladas en anaquel, botella y etiqueta -->
+            <path d="M7 53h40" />
+            <rect x="9" y="41" width="30" height="12" rx="3" fill="#fff" />
+            <path d="M9 47h30" stroke-width="1.6" />
+            <rect x="11" y="30" width="26" height="11" rx="3" fill="#E3EEEA" />
+            <path d="M11 35.5h26" stroke-width="1.6" />
+            <rect x="13" y="20" width="22" height="10" rx="3" fill="#fff" />
+            <path d="M13 25h22" stroke-width="1.6" />
+            <path d="M47 53V36a4 4 0 0 1 4-4h0a4 4 0 0 1 4 4v17z" fill="#3A6168" />
+            <rect x="49" y="26" width="4" height="6" rx="1" fill="#F3E3CC" />
+            <g class="accent">
+              <path d="M38 11h9l5 5-9 9-5-5z" fill="#C5873C" />
+              <circle cx="44.5" cy="15.5" r="1.6" fill="#fff" stroke="none" />
+            </g>
+          }
+          @case ('parking') {
+            <!-- Parqueos: auto de frente en su espacio y rótulo P -->
+            <path d="M8 54h48M12 54V40M52 54V40" stroke-width="1.8" />
+            <path d="M17 38l3.5-9a4 4 0 0 1 3.7-2.6h15.6a4 4 0 0 1 3.7 2.6L47 38z" fill="#fff" />
+            <rect x="14" y="37" width="36" height="12" rx="4" fill="#3A6168" />
+            <circle cx="21" cy="43" r="2.4" fill="#F3E3CC" />
+            <circle cx="43" cy="43" r="2.4" fill="#F3E3CC" />
+            <path d="M28 44.5h8" stroke="#fff" stroke-width="1.8" />
+            <path d="M17 49v4M47 49v4" stroke-width="2.6" />
+            <g class="accent">
+              <rect x="40" y="7" width="15" height="15" rx="3.5" fill="#C5873C" />
+              <path d="M45.5 18.5v-8h2.6a2.4 2.4 0 0 1 0 4.8h-2.6" stroke="#fff" stroke-width="1.9" />
+            </g>
+          }
+          @case ('pool') {
+            <!-- Áreas comunes: piscina con escalera, agua y sombrilla -->
+            <rect x="8" y="38" width="48" height="16" rx="4" fill="#E3EEEA" />
+            <path d="M12 45c3 2 6 2 9 0s6-2 9 0 6 2 9 0 6-2 9 0M12 50c3 2 6 2 9 0s6-2 9 0 6 2 9 0 6-2 9 0" stroke="#3A6168" stroke-width="1.6" />
+            <path d="M44 38V27a3 3 0 0 1 6 0M50 38V30" stroke-width="2" />
+            <path d="M44 31h6M44 35h6" stroke-width="1.6" />
+            <path d="M19 38V18" />
+            <path d="M7 22a12 9 0 0 1 24 0z" fill="#fff" />
+            <path d="M19 13v-2" />
+            <g class="accent">
+              <circle cx="46" cy="13" r="5.5" fill="#C5873C" />
+              <path d="M46 4v2M46 20v2M37 13h2M53 13h2" stroke="#C5873C" stroke-width="1.8" />
+            </g>
+          }
+          @case ('payroll') {
+            <!-- Nómina: boleta de pago y monedas -->
+            <path d="M12 9h26l6 6v38l-4-2.5-4 2.5-4-2.5-4 2.5-4-2.5-4 2.5-4-2.5-4 2.5z" fill="#fff" />
+            <path d="M38 9v6h6" stroke-width="1.8" />
+            <path d="M17 20h12M17 26h20M17 31h20M17 36h14" stroke-width="1.6" />
+            <rect x="17" y="40" width="20" height="5" rx="1.5" fill="#F3E3CC" stroke="none" />
+            <g class="accent">
+              <ellipse cx="48" cy="47" rx="9" ry="3.6" fill="#C5873C" />
+              <path d="M39 47v-5c0 2 4 3.6 9 3.6s9-1.6 9-3.6v5" fill="#C5873C" />
+              <ellipse cx="48" cy="42" rx="9" ry="3.6" fill="#E0A863" />
+              <path d="M45.5 42h5" stroke="#fff" stroke-width="1.6" />
             </g>
           }
         }

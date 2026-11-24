@@ -11,6 +11,8 @@ export interface DashboardAlert {
   readonly title: string;
   readonly meta: string;
   readonly action: string;
+  /** Pantalla donde se atiende (API real). */
+  readonly link?: { readonly path: string; readonly query: Readonly<Record<string, string>> };
 }
 
 export interface DashboardStats {
@@ -18,8 +20,13 @@ export interface DashboardStats {
   readonly cleaningsTotal: number;
   readonly late: number;
   readonly incidentsOpen: number;
+  readonly incidentsUnassigned?: number;
   readonly arrivals: number;
   readonly departures: number;
+  /** Hora de entrada por defecto de la empresa (API de reservas). */
+  readonly checkinTime?: string;
+  /** Estancias en curso (API de reservas). */
+  readonly inHouse?: number;
 }
 
 export interface Compliance {
@@ -68,6 +75,10 @@ export interface UpcomingMaintenance {
 export interface DashboardData {
   readonly teamsInField: number;
   readonly totalAlerts: number;
+  /** Alertas abiertas de severidad alta (el número grande del hero). */
+  readonly highAlerts?: number;
+  /** Bloques con datos de muestra porque su API aún no existe (tareas: Persona B; reservas: fase 4). */
+  readonly simulated?: { readonly tasks: boolean; readonly reservations: boolean };
   readonly alerts: readonly DashboardAlert[];
   readonly stats: DashboardStats;
   readonly compliance: Compliance;

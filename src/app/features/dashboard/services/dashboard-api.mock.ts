@@ -98,6 +98,12 @@ const COSTA: DashboardData = {
   ],
 };
 
+/** Datos de muestra de tareas y reservas para el Inicio con la API real (hasta que existan sus APIs). */
+export function sampleOps(tenantKey: string): Pick<DashboardData, 'teamsInField' | 'stats' | 'compliance' | 'ranking'> {
+  const base = tenantKey === 'tn_costa' ? COSTA : GARRENT;
+  return { teamsInField: base.teamsInField, stats: base.stats, compliance: base.compliance, ranking: base.ranking };
+}
+
 /** Mock de `GET /dashboard` por tenant, con alertas reconocibles. */
 @Injectable()
 export class MockDashboardApi extends DashboardApi {
@@ -109,7 +115,7 @@ export class MockDashboardApi extends DashboardApi {
     const base = mockTenantKey(this.session.tenant()) === 'tn_costa' ? COSTA : GARRENT;
     const acked = new Set(this.acked.all());
     const alerts: DashboardAlert[] = base.alerts.filter((a) => !acked.has(a.id));
-    return { ...base, alerts, totalAlerts: base.totalAlerts - (base.alerts.length - alerts.length) };
+    return { ...base, alerts, totalAlerts: base.totalAlerts - (base.alerts.length - alerts.length), simulated: { tasks: true, reservations: true } };
   }
 
   async acknowledge(alertId: string): Promise<void> {
@@ -117,8 +123,4 @@ export class MockDashboardApi extends DashboardApi {
     this.acked.update((ids) => [...new Set([...ids, alertId])]);
   }
 
-  async restore(alertId: string): Promise<void> {
-    await latency(120, 240);
-    this.acked.update((ids) => ids.filter((i) => i !== alertId));
-  }
 }

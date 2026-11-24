@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, model } from '@ang
 import { IconComponent } from '../../../../shared/atoms/icon/icon.component';
 import { CountUpComponent } from '../../../../shared/atoms/count-up/count-up.component';
 import { RoleKey } from '../../../../core/auth/permissions';
-import { ROLE_ICON, Role } from '../../models/team.model';
+import { Role, roleIcon } from '../../models/team.model';
 
 /**
  * Franja de roles con su conteo de miembros activos. Funciona como filtro
@@ -57,6 +57,6 @@ export class RoleStripComponent {
   readonly value = model<string>('all');
 
   protected readonly items = computed(() =>
-    this.roles().map((r) => ({ key: r.key, name: r.name, icon: ROLE_ICON[r.key], count: this.counts()[r.key] ?? 0 })),
+    this.roles().map((r) => ({ key: r.key, name: r.name, icon: roleIcon(r.key), count: this.counts()[r.key] ?? 0 })),
   );
 }

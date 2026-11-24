@@ -1,0 +1,171 @@
+<a routerLink="/colaboradores" class="back inline-flex items-center gap-1.5 text-[13px] font-bold">
+  <app-icon name="arrow-left" [size]="16" /> Colaboradores
+</a>
+
+@if (store.loading() && !member()) {
+  <div class="skeleton mt-4 h-[168px] !rounded-hero"></div>
+  <div class="skeleton mt-6 h-10 w-96"></div>
+} @else if (!member()) {
+  <div class="mt-4 rounded-card border border-border-card bg-surface shadow-e1">
+    <app-empty-state kind="team" title="Esa persona ya no está en la empresa" message="Puede que la hayan quitado o que el enlace sea de otra empresa." />
+  </div>
+} @else {
+  @let m = member()!;
+  <!-- Cabecera -->
+  <header class="head reveal relative mt-4 overflow-hidden rounded-hero px-6 py-7 sm:px-8">
+    <div class="glow pointer-events-none absolute -right-24 -top-28 h-72 w-72 rounded-pill"></div>
+    <div class="relative flex flex-col gap-5 sm:flex-row sm:items-center">
+      <app-avatar [initials]="ini(m.full_name)" [name]="m.full_name" [size]="80" />
+      <div class="min-w-0 flex-1">
+        <h1 class="truncate font-display text-[32px] font-semibold leading-tight tracking-display text-white">{{ m.full_name }}</h1>
+        <div class="truncate text-[13px] text-white/70">
+          @if (employee(); as e) {
+            <span class="font-semibold text-white/90">{{ e.position }}</span> · <span class="font-mono">{{ e.employee_code }}</span> ·
+          }
+          {{ m.email }}@if (m.phone) { · {{ m.phone }} }
+        </div>
+        <div class="mt-3 flex flex-wrap gap-2">
+          <app-badge [tone]="m.status === 'active' ? 'success' : 'danger'" [icon]="m.status === 'active' ? 'check-circle' : 'ban'">
+            {{ m.status === 'active' ? 'Con acceso' : 'Sin acceso' }}
+          </app-badge>
+          <span class="inline-flex items-center rounded-xs bg-white/10 px-2.5 py-[5px] text-[11px] font-bold text-white">{{ m.role_name }}</span>
+          @if (isMe()) {
+            <span class="inline-flex items-center rounded-xs bg-secondary/30 px-2.5 py-[5px] text-[11px] font-bold text-secondary-light">Tú</span>
+          }
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <app-tabs class="mt-6 block" [options]="tabOptions()" [value]="tab()" (valueChange)="setTab($event)" ariaLabel="Secciones de la ficha" />
+
+  <div class="mt-6">
+    @switch (tab()) {
+      @case ('perfil') {
+        <div class="reveal-soft grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <section class="rounded-card border border-border-card bg-surface p-5 shadow-e1">
+            <h2 class="font-display text-[17px] font-semibold text-primary">Resumen</h2>
+            <dl class="mt-3 divide-y divide-divider">
+              <div class="flex justify-between gap-4 py-2.5"><dt class="text-[12.5px] text-text-secondary">Propiedades</dt><dd class="tabular text-[13px] font-semibold text-primary">{{ m.properties_count }}</dd></div>
+              <div class="flex justify-between gap-4 py-2.5"><dt class="text-[12.5px] text-text-secondary">Último acceso</dt><dd class="text-[13px] font-semibold text-primary">{{ m.last_seen_at | relativeDate: 'time' : 'Nunca' }}</dd></div>
+              <div class="flex justify-between gap-4 py-2.5"><dt class="text-[12.5px] text-text-secondary">Miembro desde</dt><dd class="text-[13px] font-semibold text-primary">{{ m.joined_at | relativeDate: 'day' }}</dd></div>
+              @if (employee(); as e) {
+                <div class="flex justify-between gap-4 py-2.5"><dt class="text-[12.5px] text-text-secondary">Pago</dt><dd class="text-right text-[13px] font-semibold text-primary">{{ pay() }}<span class="block text-[11.5px] font-normal text-text-secondary">{{ e.on_payroll ? 'En planilla' : 'Fuera de planilla' }}</span></dd></div>
+              }
+            </dl>
+          </section>
+
+          <section class="rounded-card border border-border-card bg-surface p-5 shadow-e1">
+            <div class="flex items-center justify-between gap-3">
+              <h2 class="font-display text-[17px] font-semibold text-primary">Rol en la empresa</h2>
+              @if (!store.canManage()) {
+                <span class="text-[11.5px] text-text-secondary">Solo lectura</span>
+              }
+            </div>
+            <div class="mt-3">
+              <app-role-picker
+                [roles]="store.roles()"
+                [value]="m.role_key"
+                (valueChange)="changeRole($any($event))"
+                [disabled]="!store.canManage() || store.busy() === m.id || isMe()"
+                [pending]="store.busy() === m.id"
+                label="Rol del colaborador"
+              />
+            </div>
+            @if (store.canManage() && !isMe()) {
+              <div class="mt-5 rounded-tile border border-danger/15 bg-danger-soft/50 p-4">
+                <div class="text-[13px] font-bold text-danger">Acceso</div>
+                <p class="mt-1 text-[12px] leading-snug text-text-body">Suspender corta el acceso en la app y la web de inmediato. Cerrar sesiones obliga a entrar de nuevo.</p>
+                <div class="mt-3 flex flex-wrap gap-2">
+                  <app-button [variant]="m.status === 'active' ? 'danger' : 'secondary'" size="sm" [disabled]="store.busy() === m.id" (pressed)="store.toggleSuspend(m)">
+                    <app-icon [name]="m.status === 'active' ? 'ban' : 'check'" [size]="15" /> {{ m.status === 'active' ? 'Suspender' : 'Reactivar' }}
+                  </app-button>
+                  <app-button variant="tertiary" size="sm" [disabled]="store.busy() === m.id || m.status !== 'active'" (pressed)="store.revokeSessions(m)">
+                    <app-icon name="logout" [size]="15" /> Cerrar sesiones
+                  </app-button>
+                </div>
+              </div>
+            }
+          </section>
+        </div>
+      }
+
+      @case ('laboral') {
+        @if (employeeLoading()) {
+          <div class="flex items-center gap-3 py-10 text-[13px] text-text-secondary"><app-spinner [size]="18" /> Cargando la ficha laboral…</div>
+        } @else {
+          @if (!employee()) {
+            <div class="reveal-soft mb-5 flex items-start gap-3 rounded-tile bg-teal-washed px-4 py-3.5 text-[12.5px] leading-snug text-text-body">
+              <app-icon name="info" [size]="17" class="mt-px text-teal-muted" />
+              <span>{{ m.full_name }} aún no tiene ficha laboral. Con ella se calcula su pago y se le asigna horario.</span>
+            </div>
+          }
+          <app-employee-form class="reveal-soft" [initial]="employee()" [userId]="m.user_id" [saving]="employeeSaving()" [serverError]="employeeError()" (submitted)="saveEmployee($event)" />
+        }
+      }
+
+      @case ('horario') {
+        @if (employeeLoading()) {
+          <div class="flex items-center gap-3 py-10 text-[13px] text-text-secondary"><app-spinner [size]="18" /> Cargando el horario…</div>
+        } @else if (employee(); as e) {
+          <app-schedule-editor class="reveal-soft" [schedule]="e.schedule" [saving]="scheduleSaving()" (saved)="saveSchedule($event)" />
+        } @else {
+          <div class="rounded-card border border-border-card bg-surface shadow-e1">
+            <app-empty-state kind="team" title="Primero, la ficha laboral" message="El horario se guarda en la ficha laboral de la persona.">
+              <app-button variant="primary" (pressed)="setTab('laboral')">Crear ficha laboral</app-button>
+            </app-empty-state>
+          </div>
+        }
+      }
+
+      @case ('propiedades') {
+        <div class="reveal-soft grid gap-4" [class.lg:grid-cols-[minmax(0,1fr)_380px]]="canAssign()">
+          <section>
+            <div class="mb-3 flex items-baseline justify-between gap-3">
+              <h2 class="font-display text-[17px] font-semibold text-primary">{{ isOwner() ? 'Sus propiedades' : 'Propiedades asignadas' }}</h2>
+              <span class="text-[12px] text-text-secondary">{{ isOwner() ? 'Solo ve estas, con sus limpiezas y reservas.' : 'Solo ve y recibe tareas de estas.' }}</span>
+            </div>
+            @if (propsLoading()) {
+              <div class="grid gap-3 sm:grid-cols-2"><div class="skeleton h-20 !rounded-card"></div><div class="skeleton h-20 !rounded-card"></div></div>
+            } @else {
+              <div class="grid gap-3 sm:grid-cols-2">
+                @for (p of props(); track p.id; let i = $index) {
+                  <a [routerLink]="['/propiedades', p.code]" class="prop reveal flex items-center gap-3 rounded-card border border-border-card bg-surface p-2.5 shadow-e1" [style.--i]="i">
+                    <div class="h-14 w-[72px] shrink-0 overflow-hidden rounded-xs"><app-property-cover class="h-full" [property]="p" /></div>
+                    <div class="min-w-0">
+                      <div class="font-mono text-[11px] font-bold text-teal-muted">{{ p.code }}</div>
+                      <div class="truncate text-[13.5px] font-bold text-primary">{{ p.name }}</div>
+                      <div class="truncate text-[11.5px] text-text-secondary">{{ place(p) }}</div>
+                    </div>
+                  </a>
+                } @empty {
+                  <div class="rounded-card border border-dashed border-border-field bg-surface-soft px-5 py-8 text-center text-[13px] text-text-body sm:col-span-2">
+                    {{ isOwner() ? 'Todavía no tiene propiedades registradas.' : 'Todavía no tiene propiedades asignadas: no verá tareas en la app.' }}
+                  </div>
+                }
+              </div>
+            }
+          </section>
+          @if (canAssign()) {
+            <section class="self-start rounded-card border border-border-card bg-surface p-5 shadow-e1">
+              <h2 class="font-display text-[17px] font-semibold text-primary">{{ isOwner() ? 'Elegir sus propiedades' : 'Asignar propiedades' }}</h2>
+              <app-user-picker class="mt-3 block" [people]="propertyOptions()" [(selected)]="draftProps" placeholder="Buscar por código o nombre" empty="No hay propiedades." />
+              <div class="mt-4 flex justify-end gap-2">
+                <app-button variant="tertiary" [disabled]="!propsDirty()" (pressed)="resetProps()">Deshacer</app-button>
+                <app-button variant="primary" [disabled]="!propsDirty()" [loading]="propsSaving()" (pressed)="saveProps()">Guardar</app-button>
+              </div>
+            </section>
+          }
+        </div>
+      }
+
+      @case ('nomina') {
+        @if (employee(); as e) { <app-employee-hr class="reveal-soft block" [employeeId]="e.id" section="nomina" /> }
+      }
+
+      @case ('disciplina') {
+        @if (employee(); as e) { <app-employee-hr class="reveal-soft block" [employeeId]="e.id" section="disciplina" /> }
+      }
+    }
+  </div>
+}

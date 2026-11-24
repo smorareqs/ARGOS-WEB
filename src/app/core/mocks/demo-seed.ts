@@ -36,7 +36,7 @@ export const DEMO_TENANTS: readonly DemoTenant[] = [
   {
     id: 'tn_costa',
     name: 'Costa Limpia S.A.',
-    features: { reservations: false, parking: false, shared_areas: false, guest_chat: false, payroll: false },
+    features: { reservations: true, parking: true, shared_areas: false, guest_chat: false, payroll: false },
   },
 ];
 
@@ -182,6 +182,8 @@ export function membershipsOf(user: DemoUser): Membership[] {
 export function mockTenantKey(tenant: { readonly id: string; readonly name: string } | null): string {
   if (!tenant) return DEMO_TENANTS[0].id;
   if (DEMO_TENANTS.some((t) => t.id === tenant.id)) return tenant.id;
-  const byName = DEMO_TENANTS.find((t) => t.name.toLowerCase() === tenant.name.trim().toLowerCase());
+  // La API real nombra "Costa Limpia" a la empresa que la demo llama "Costa Limpia S.A.".
+  const key = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().split(/\s+/).slice(0, 2).join(' ');
+  const byName = DEMO_TENANTS.find((t) => key(t.name) === key(tenant.name.trim()));
   return byName?.id ?? DEMO_TENANTS[0].id;
 }

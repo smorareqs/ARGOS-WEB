@@ -72,10 +72,22 @@ mezcla lo que ya existe en la API con lo que todavía no (reparto.md §3, regla 
 
 | Módulo | development (`npm start`, Docker) | mock (`start:mock`) y demo | production |
 | --- | --- | --- | --- |
-| Acceso (`auth`: login, empresa, sesión) | **API real** | simulado | API real |
-| Inicio (`dashboard`) | simulado | simulado | API real |
-| Propiedades | simulado | simulado | API real |
-| Colaboradores (`team`) | simulado | simulado | API real |
+| Acceso, Mi perfil y Plataforma (`auth`) | **API real** | simulado | API real |
+| Colaboradores y ficha laboral (`team`) | **API real** | simulado | API real |
+| Configuración (`settings`) | **API real** | simulado | API real |
+| Propiedades, edificios y checklists (`properties`) | **API real** | simulado | API real |
+| Bitácora (`audit`) | **API real** | simulado | API real |
+| Mantenimiento (`maintenance`) y Alertas (`alerts`) | **API real** | simulado | API real |
+| Reservas, huéspedes, canales e iCal (`reservations`) | **API real** | simulado | API real |
+| Inicio (`dashboard`) | **API real** (llegadas incluidas); limpiezas, cumplimiento y ranking marcados "Muestra" hasta tareas | simulado | API real |
+| Bandeja de la campana (`notifications`) | simulado hasta la API de B | simulado | API real |
+| Itinerario e Inventario (`itinerary`, `inventory`) | simulado hasta las APIs de B | simulado | API real |
+| Áreas comunes y Parqueos (`sharedAreas`, `parking`) | simulado hasta las APIs de B (fase 4) | simulado | API real |
+| RRHH: nómina, disciplina y configuración (`hr`) | **API real** | simulado | API real |
+| RRHH: asistencia (`attendance`) y Métricas (`metrics`) | simulado (API de Persona B) | simulado | API real |
+| Facturación, planes, suscripciones y claves API (`billing`) | **API real** | simulado | API real |
+| Chat (`chat`) | simulado (API de Persona B) | simulado | API real |
+| Facturación (`billing`) | simulado (fase 6) | simulado | API real |
 | Solicitar demo (`demoRequests`) | simulado | simulado | API real |
 
 Las pantallas simuladas lo dicen arriba con un aviso **"Simulado"**. Los mocks reconocen las
@@ -93,9 +105,17 @@ navegador.
 | --- | --- | --- |
 | `/` | — | Sitio público: fotografía real, ilustraciones propias, captura del panel, multiempresa, seguridad, origen del nombre y "Solicitar demo" (`/#demo` abre el formulario) |
 | `/login` | W-A1, W-A2, W-A3 | Login con "recordarme 30 días", 2FA (428 → código), elegir empresa, recuperar contraseña; fotos de propiedades a la derecha |
-| `/inicio` | W-B1 | Alertas de prioridad (reconocer con deshacer), indicadores, cumplimiento, ranking, mapa de propiedades, actividad y mantenimientos |
-| `/propiedades` | W-C1 | Tarjetas o tabla, filtros en la URL, detalle en panel lateral (`?ver=CODIGO`), acceso cifrado con "Mostrar", alta con vista previa |
-| `/colaboradores` | W-D1, W-O2 | Miembros por rol, cambio de rol con deshacer, suspender con confirmación, cerrar sesiones, invitaciones (enviar, reenviar, revocar) |
+| `/inicio` | W-B1 | Alertas de prioridad (reconocer y abrir lo que las causa), indicadores, cumplimiento, ranking, mapa de propiedades con su estado, actividad y próximos preventivos |
+| `/propiedades` | W-C1, W-C3, W-C4 | Tarjetas o tabla con filtros en la URL (incluye "Sin asignados", "Sin checklist", "Sin acceso"), resumen en panel lateral (`?ver=CODIGO`), alta con vista previa; pestañas Edificios y Checklists (`?seccion=`) con el editor de plantillas y su vista previa como en la app |
+| `/propiedades/CODIGO` | W-C2 | Ficha: portada (foto en S3 o escena generada), datos, acceso cifrado con "Mostrar" y quién lo consultó, checklist, asignados, propietarios e historial |
+| `/colaboradores` | W-D1, W-O2 | Miembros por rol, cambio de rol con deshacer, suspender con confirmación, cerrar sesiones, invitaciones (enviar, reenviar, revocar), "Abrir ficha" |
+| `/colaboradores/:id` | W-D2 | Ficha: perfil (rol, acceso, sesiones), laboral (puesto, documentos, pago, emergencias), horario semanal, propiedades asignadas, nómina (líneas por período con boleta) y disciplina |
+| `/chat` | W-M1 | Conversaciones con huéspedes y del equipo a tres columnas (`?tipo=huespedes` o `equipo`, `?c=` conversación): no leídos, búsqueda, burbujas por día, respuestas rápidas editables y la reserva al lado |
+| `/configuracion?tab=facturacion` · `?tab=integraciones` | W-O4 | Plan y uso, factura pendiente con "Pagar", historial con PDF, cambiar de plan, cancelar; claves API para el sitio web |
+| `/plataforma/planes`, `/plataforma/suscripciones` | W-P2, W-P3 | Planes con precios, límites y funcionalidades; suscripciones con estado, vencimientos, cobros fallidos, reactivar, dar prueba y facturas |
+| `/rrhh` | W-J1–W-J5 | Pestañas (`?tab=`): Asistencia (mes por colaborador, marcaje manual con motivo); Nómina (períodos, `?periodo=` con la planilla editable en revisión, ficha de la línea `?linea=`, Excel y boletas, cerrar); Disciplina (alta con adjuntos `?accion=1`, pendientes de acuse); Configuración de nómina |
+| `/mantenimiento` | W-G1–W-G5 | Pestañas (`?tab=`): Incidencias en tablero por estado o tabla (`?vista=tabla`) con ficha (`?ver=`: asignar, iniciar, resolver con fotos y costo, cerrar, rechazar, reabrir) y reporte (`?nueva=1`); Activos (ficha `?activo=` con documentos, preventivos e incidencias); Preventivos (calendario y "lo que toca"); Proveedores (`?proveedor=`); Indicadores |
+| `/alertas` | W-L1 | Tarjetas por tipo, filtros por tipo, prioridad y estado (`?tipo=`, `?sev=`, `?estado=`), reconocer, resolver y "Ver" que lleva a lo que la causa |
 | `/itinerario`, `/inventario`, … | — | Secciones de fases siguientes: muestran qué traerán y en qué fase |
 
 El menú lateral se construye desde los permisos del rol y las banderas del tenant

@@ -91,6 +91,29 @@
 }
 
 @layer components {
+  /* ── Campos nativos (fecha, hora, número, área de texto) ──────────── */
+  /* Mismo aspecto que app-input compacto: 40 px, radio 8, anillo dorado. */
+  .field-native {
+    width: 100%;
+    height: 40px;
+    border-radius: var(--radius-field);
+    border: 1px solid var(--color-border-field);
+    background: var(--color-surface);
+    padding: 0 12px;
+    font-size: 13.5px;
+    color: var(--color-primary);
+  }
+  textarea.field-native { height: auto; padding: 10px 12px; line-height: 1.5; resize: vertical; }
+  .field-native:focus { outline: 2px solid var(--color-secondary); outline-offset: 1px; }
+  .field-native[aria-invalid='true'] { border-color: var(--color-danger); }
+
+  /* Barra de filtros fija bajo la topbar (listas del panel). */
+  .toolbar-glass {
+    background: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-filter);
+    backdrop-filter: var(--glass-filter);
+  }
+
   /* ── Materiales ───────────────────────────────────────────────────── */
   /* Solo para la capa funcional (topbar, barras flotantes), nunca contenido. */
   .material-glass {

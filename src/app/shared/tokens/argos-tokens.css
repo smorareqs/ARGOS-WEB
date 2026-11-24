@@ -26,6 +26,11 @@
   --color-primary-deep: #002a31; /* Teal noche (fondos de ilustración) */
   --color-secondary: #c5873c; /* Dorado · acción / CTA                 */
   --color-secondary-light: #e0a961; /* Dorado claro (brillos, luces) */
+  /* Acción principal (botón primario y enlaces): terracota, el barro de las
+     fachadas de Antigua. Blanco encima: 4.8:1 (WCAG AA). El dorado queda como
+     acento de marca (indicadores, etiquetas), no para texto de acción. */
+  --color-action: #b5582a;
+  --color-on-action: #ffffff;
 
   /* ── Tonos de apoyo ─────────────────────────────────────────────── */
   --color-teal-muted: #3a6168;
@@ -133,9 +138,7 @@
   --glass-filter: saturate(180%) blur(20px);
   --overlay: rgba(0, 56, 65, 0.55);
 
-  /* Retícula del portal (ux-ui.md §2.5) */
-  --sidebar-w: 260px;
-  --sidebar-w-collapsed: 76px;
+  /* Retícula del portal: topbar fija y contenido al 100 % del ancho; la
+     navegación es un panel flotante que sale de la topbar (no ocupa columna). */
   --topbar-h: 64px;
-  --content-max: 1280px;
 }

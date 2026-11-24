@@ -3,9 +3,10 @@ import { SessionStore } from '../../../core/store/session.store';
 import { ToastService } from '../../../core/services/toast.service';
 import { ApiError, toApiError } from '../../../core/http/api-error';
 import { PropertiesApi } from '../services/properties-api.service';
-import { AccessInfo, Building, Property, PropertyDraft, TodayStatus } from '../models/property.model';
+import { AccessInfo, Building, ChecklistTemplate, Property, PropertyDraft, TodayStatus } from '../models/property.model';
 
-export type StatusFilter = 'all' | TodayStatus | 'incident' | 'inactive';
+/** Filtros de la lista: estado de hoy (cuando exista), datos que faltan o activas. */
+export type StatusFilter = 'all' | 'active' | 'inactive' | 'unassigned' | 'no-checklist' | 'no-access' | TodayStatus | 'incident';
 
 export interface PropertyFilters {
   readonly q: string;
@@ -21,7 +22,8 @@ const norm = (s: string) =>
 
 /**
  * Tienda de Propiedades (W-C1). Vive con la pantalla. Los filtros viven en
- * la URL (ux-ui.md §3.2): la tienda solo sabe aplicarlos.
+ * la URL (ux-ui.md §3.2): la tienda solo sabe aplicarlos sobre la lista que ya
+ * llegó filtrada por el alcance de la persona.
  */
 @Injectable()
 export class PropertiesStore {
@@ -31,6 +33,7 @@ export class PropertiesStore {
 
   private readonly _items = signal<readonly Property[]>([]);
   private readonly _buildings = signal<readonly Building[]>([]);
+  private readonly _templates = signal<readonly ChecklistTemplate[]>([]);
   private readonly _loading = signal(true);
   private readonly _error = signal<string | null>(null);
   private readonly _saving = signal(false);
@@ -42,6 +45,7 @@ export class PropertiesStore {
 
   readonly items = this._items.asReadonly();
   readonly buildings = this._buildings.asReadonly();
+  readonly templates = this._templates.asReadonly();
   readonly loading = this._loading.asReadonly();
   readonly error = this._error.asReadonly();
   readonly saving = this._saving.asReadonly();
@@ -53,6 +57,8 @@ export class PropertiesStore {
 
   readonly canManage = computed(() => this.session.can('properties.manage'));
   readonly canSeeAccess = computed(() => this.session.can('properties.access_info'));
+  /** Hay estado de hoy cuando el backend ya calcula tareas. */
+  readonly hasToday = computed(() => this._items().some((p) => p.today_status !== undefined));
 
   readonly summary = computed(() => {
     const items = this._items();
@@ -60,7 +66,7 @@ export class PropertiesStore {
       total: items.length,
       active: items.filter((p) => p.is_active).length,
       buildings: this._buildings().length,
-      withIncidents: items.filter((p) => p.open_incidents > 0).length,
+      unassigned: items.filter((p) => p.is_active && !p.assigned.length).length,
     };
   });
 
@@ -68,9 +74,14 @@ export class PropertiesStore {
     this._loading.set(true);
     this._error.set(null);
     try {
-      const [props, buildings] = await Promise.all([this.api.list(), this.api.buildings()]);
-      this._items.set(props.items);
-      this._buildings.set(buildings.items);
+      const [props, buildings, templates] = await Promise.all([
+        this.api.list(),
+        this.api.buildings(),
+        this.api.templates().catch(() => [] as readonly ChecklistTemplate[]),
+      ]);
+      this._items.set(props);
+      this._buildings.set(buildings);
+      this._templates.set(templates);
     } catch (err) {
       this._error.set(toApiError(err).detail);
     } finally {
@@ -84,19 +95,15 @@ export class PropertiesStore {
       if (f.building !== 'all' && p.building_id !== f.building) return false;
       if (!this.matchStatus(p, f.status)) return false;
       if (q.length < 2) return true;
-      const hay = norm([p.code, p.name, p.building_name ?? '', p.zone, ...p.assigned.map((a) => a.name)].join(' '));
+      const hay = norm([p.code, p.name, p.building_name ?? '', p.zone ?? '', ...p.assigned.map((a) => a.full_name)].join(' '));
       return hay.includes(q);
     });
   }
 
   /** Conteo por chip respetando búsqueda y edificio (no el estado). */
-  counts(f: PropertyFilters): Record<StatusFilter, number> {
+  counts(f: PropertyFilters, keys: readonly StatusFilter[]): Record<string, number> {
     const base = this.apply({ ...f, status: 'all' });
-    const keys: StatusFilter[] = ['all', 'ready', 'cleaning', 'pending', 'occupied', 'incident', 'inactive'];
-    return Object.fromEntries(keys.map((k) => [k, base.filter((p) => this.matchStatus(p, k)).length])) as Record<
-      StatusFilter,
-      number
-    >;
+    return Object.fromEntries(keys.map((k) => [k, base.filter((p) => this.matchStatus(p, k)).length]));
   }
 
   async create(draft: PropertyDraft): Promise<Property | null> {
@@ -104,7 +111,7 @@ export class PropertiesStore {
     this._saveError.set(null);
     try {
       const created = await this.api.create(draft);
-      this._items.update((list) => [created, ...list]);
+      this._items.update((list) => [...list, created].sort((a, b) => a.code.localeCompare(b.code)));
       this._justCreated.set(created.id);
       setTimeout(() => this._justCreated.set(null), 2600);
       this.toast.success(`Propiedad ${created.code} creada.`);
@@ -137,10 +144,23 @@ export class PropertiesStore {
   }
 
   private matchStatus(p: Property, s: StatusFilter): boolean {
-    if (s === 'all') return true;
-    if (s === 'inactive') return !p.is_active;
-    if (!p.is_active) return false;
-    if (s === 'incident') return p.open_incidents > 0;
-    return p.today_status === s;
+    switch (s) {
+      case 'all':
+        return true;
+      case 'inactive':
+        return !p.is_active;
+      case 'active':
+        return p.is_active;
+      case 'unassigned':
+        return p.is_active && !p.assigned.length;
+      case 'no-checklist':
+        return p.is_active && !p.checklist_template_id;
+      case 'no-access':
+        return p.is_active && !p.has_access_info;
+      case 'incident':
+        return p.is_active && (p.open_incidents ?? 0) > 0;
+      default:
+        return p.is_active && p.today_status === s;
+    }
   }
 }

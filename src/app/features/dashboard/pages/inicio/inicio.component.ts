@@ -2,7 +2,6 @@ import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/c
 import { Router, RouterLink } from '@angular/router';
 import { DashboardStore } from '../../store/dashboard.store';
 import { DashboardAlert, MapPin } from '../../models/dashboard.model';
-import { ToastService } from '../../../../core/services/toast.service';
 import { IconComponent } from '../../../../shared/atoms/icon/icon.component';
 import { ButtonComponent } from '../../../../shared/atoms/button/button.component';
 import { StatTileComponent } from '../../../../shared/molecules/stat-tile/stat-tile.component';
@@ -19,6 +18,7 @@ import { UpcomingMaintenanceComponent } from '../../components/upcoming-maintena
  * bloques agrupados debajo, cada uno enlazado a su sección.
  */
 import { DemoDataNoteComponent } from '../../../../shared/molecules/demo-data-note/demo-data-note.component';
+import { plural } from '../../../../shared/utils/plural';
 @Component({
   selector: 'app-inicio-page',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -42,12 +42,13 @@ import { DemoDataNoteComponent } from '../../../../shared/molecules/demo-data-no
     .live { box-shadow: 0 0 0 3px rgba(90, 138, 107, 0.18); }
     .card-link { transition: color var(--dur-fast); }
     .card-link:hover { color: var(--color-primary); }
+    .sim { border-radius: 4px; background: var(--color-warning-soft); padding: 1px 6px; font-family: var(--font-sans); font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: var(--color-warning); }
   `,
 })
 export class InicioComponent {
   protected readonly store = inject(DashboardStore);
+  protected readonly plural = plural;
   private readonly router = inject(Router);
-  private readonly toast = inject(ToastService);
 
   protected readonly today = computed(() =>
     new Intl.DateTimeFormat('es-GT', {
@@ -62,8 +63,20 @@ export class InicioComponent {
     void this.store.load();
   }
 
+  /** Cada alerta lleva a la pantalla donde se resuelve. */
   protected onAlertAction(a: DashboardAlert): void {
-    this.toast.show(`"${a.action}" abrirá la tarea o incidencia cuando lleguen Itinerario y Mantenimiento.`);
+    if (a.link) {
+      void this.router.navigate([a.link.path], { queryParams: a.link.query });
+      return;
+    }
+    const target: Record<DashboardAlert['kind'], [string, Record<string, string>]> = {
+      late: ['/itinerario', { vista: 'hoy' }],
+      incident: ['/mantenimiento', {}],
+      maintenance: ['/mantenimiento', { tab: 'preventivos' }],
+      inventory: ['/inventario', { tab: 'discrepancias' }],
+    };
+    const [path, queryParams] = target[a.kind];
+    void this.router.navigate([path], { queryParams });
   }
 
   protected onPin(p: MapPin): void {

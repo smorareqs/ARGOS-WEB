@@ -13,9 +13,10 @@ export type ButtonVariant =
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
 /**
- * Átomo · botón (ux-ui.md §1.1: un solo dorado por pantalla).
- * - primary   → CTA dorado con brillo interno (edge effect, ref. Airbnb)
- * - secondary → teal sólido · tertiary → blanco con borde · ghost → solo texto
+ * Átomo · botón. Un solo color sólido por pantalla: la acción principal.
+ * - primary   → CTA terracota (--color-action, 4.8:1) con brillo interno
+ * - secondary → teal lavado con texto teal: acompaña sin competir
+ * - tertiary  → blanco con borde · ghost → solo texto
  * - danger    → rojo para acciones destructivas · pill / link / icon
  * Respuesta al presionar en < 100 ms (escala .97). `loading` muestra spinner
  * interno y bloquea el botón durante la petición (§3.3).
@@ -63,13 +64,13 @@ export class ButtonComponent {
 
   private static readonly VARIANTS: Record<ButtonVariant, string> = {
     primary:
-      'bg-secondary text-white shadow-[var(--shadow-edge),var(--shadow-cta)] hover:brightness-[1.06] active:brightness-95',
-    secondary: 'bg-primary text-white shadow-[var(--shadow-edge)] hover:bg-teal-muted',
+      'bg-action text-on-action shadow-[var(--shadow-edge),var(--shadow-cta)] hover:brightness-[1.07] active:brightness-95',
+    secondary: 'bg-teal-washed text-primary shadow-[inset_0_0_0_1px_rgba(0,56,65,0.08)] hover:brightness-[0.96] active:brightness-[0.93]',
     tertiary: 'border border-border-field bg-surface text-primary shadow-e1 hover:bg-surface-soft hover:border-disabled/60',
     ghost: 'text-primary hover:bg-primary/[0.06]',
     danger: 'bg-danger text-white shadow-[var(--shadow-edge)] hover:brightness-110',
     pill: '!h-auto rounded-sm bg-secondary px-3.5 py-[7px] text-[11.5px] text-primary hover:brightness-105',
-    link: '!h-auto !px-0 text-[12.5px] text-secondary hover:opacity-80',
+    link: '!h-auto !px-0 text-[12.5px] text-action hover:opacity-80',
     icon: '!w-10 !px-0 text-text-body hover:bg-primary/[0.06] hover:text-primary',
   };
 

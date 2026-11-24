@@ -9,6 +9,9 @@ export type AuthStep = 'credentials' | 'totp' | 'tenant' | 'forgot' | 'forgot-se
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
+/** Opción de "Elige una empresa" que entra a la administración de ARGOS. */
+export const PLATFORM_CHOICE = '__platform__';
+
 /**
  * Tienda del flujo de acceso (W-A1 a W-A3, fase01.md §3.7.1):
  *  credenciales → (428) código TOTP → (varias membresías) elegir empresa.
@@ -31,6 +34,9 @@ export class AuthStore {
   private readonly _errorTick = signal(0);
   private readonly _memberships = signal<readonly Membership[]>([]);
   private readonly _choosing = signal<string | null>(null);
+  private readonly _platformAdmin = signal(false);
+  /** En "Elige una empresa" se ofrece también la administración de ARGOS. */
+  readonly platformAdmin = this._platformAdmin.asReadonly();
   private readonly _touched = signal<Record<string, boolean>>({});
   private selectionToken: string | null = null;
 
@@ -91,13 +97,15 @@ export class AuthStore {
     return this.login(this.totp());
   }
 
+  /** `tenantId` = PLATFORM_CHOICE entra a la administración de ARGOS. */
   async chooseTenant(tenantId: string): Promise<boolean> {
     if (!this.selectionToken || this._choosing()) return false;
     this._choosing.set(tenantId);
     this._error.set(null);
     try {
+      const target = tenantId === PLATFORM_CHOICE ? { platform: true as const } : { tenant_id: tenantId };
       const res = await this.api.selectTenant({
-        tenant_id: tenantId,
+        ...target,
         selection_token: this.selectionToken,
         device: TokenStorage.device(),
       });
@@ -155,6 +163,7 @@ export class AuthStore {
     if (res.status === 'select_tenant') {
       this.selectionToken = res.selection_token;
       this._memberships.set(res.memberships);
+      this._platformAdmin.set(!!res.platform_admin);
       this.step.set('tenant');
       return false;
     }
