@@ -41,6 +41,8 @@ const ICONS = {
   'chevron-up-down': `<path d="M8 9.5l4-4 4 4M8 14.5l4 4 4-4" ${S}/>`,
   plus: `<path d="M12 5v14M5 12h14" ${S}/>`,
   x: `<path d="M6.5 6.5l11 11M17.5 6.5l-11 11" ${S}/>`,
+  minus: `<path d="M5 12h14" ${S}/>`,
+  focus: `<path d="M4 9V5.5A1.5 1.5 0 015.5 4H9M15 4h3.5A1.5 1.5 0 0120 5.5V9M20 15v3.5a1.5 1.5 0 01-1.5 1.5H15M9 20H5.5A1.5 1.5 0 014 18.5V15" ${S}/><circle cx="12" cy="12" r="2.6" ${S}/>`,
   check: `<path d="M5 12.5l4.5 4.5L19 7.5" ${S}/>`,
   'check-double': `<path d="M2.5 12.5L7 17l9.5-9.5M12.5 16l1 1L23 7.5" ${S}/>`,
   'check-circle': `<circle cx="12" cy="12" r="8.8" ${S}/><path d="M8.3 12.3l2.5 2.5 4.9-5" ${S}/>`,

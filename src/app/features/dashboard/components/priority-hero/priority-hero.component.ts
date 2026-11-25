@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
-import { IconComponent, IconName } from '../../../../shared/atoms/icon/icon.component';
+import { IconComponent } from '../../../../shared/atoms/icon/icon.component';
+import { DimIconComponent, DimIconName } from '../../../../shared/atoms/dim-icon/dim-icon.component';
 import { CountUpComponent } from '../../../../shared/atoms/count-up/count-up.component';
 import { AlertKind, DashboardAlert } from '../../models/dashboard.model';
 
-const KIND_ICON: Record<AlertKind, IconName> = {
-  incident: 'alert-chat',
+const KIND_ICON: Record<AlertKind, DimIconName> = {
+  incident: 'warning',
   late: 'clock',
-  maintenance: 'maintenance',
-  inventory: 'inventory',
+  maintenance: 'incident',
+  inventory: 'box',
 };
 
 /**
@@ -18,8 +19,10 @@ const KIND_ICON: Record<AlertKind, IconName> = {
 @Component({
   selector: 'app-priority-hero',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent, CountUpComponent],
+  imports: [IconComponent, CountUpComponent, DimIconComponent],
   template: `
+    <!-- La campana sale de la tarjeta: sobresale por arriba y suena si hay alertas -->
+    <app-dim-icon name="bell" [size]="132" class="bell pointer-events-none absolute -top-14 right-6 z-10 hidden sm:block xl:right-24" [class.ringing]="total() > 0" />
     <section class="hero relative overflow-hidden rounded-hero bg-primary px-6 py-6 text-white sm:px-8 sm:py-7" aria-label="Requiere tu atención">
       <div class="radar pointer-events-none absolute -right-16 top-1/2 hidden h-[340px] w-[340px] -translate-y-1/2 xl:block" aria-hidden="true">
         <span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span>
@@ -48,12 +51,12 @@ const KIND_ICON: Record<AlertKind, IconName> = {
         <div class="flex min-w-0 flex-1 flex-col justify-center gap-2.5 xl:max-w-[600px]">
           @for (a of alerts(); track a.id; let i = $index) {
             <div
-              class="alert reveal flex flex-wrap items-center gap-x-3 gap-y-2 rounded-tile border border-white/[0.08] bg-white/[0.07] py-3 pl-3.5 pr-2.5 backdrop-blur-sm sm:flex-nowrap"
+              class="alert group reveal flex flex-wrap items-center gap-x-3 gap-y-2 rounded-tile border border-white/[0.08] bg-white/[0.07] py-3 pl-3.5 pr-2.5 backdrop-blur-sm sm:flex-nowrap"
               [style.--i]="i + 2"
               animate.leave="alert-out"
             >
-              <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-sm bg-danger/40 text-white">
-                <app-icon [name]="icon(a.kind)" [size]="17" />
+              <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-white/[0.92] shadow-e1">
+                <app-dim-icon [name]="icon(a.kind)" [size]="34" />
               </span>
               <div class="min-w-0 flex-1 basis-[calc(100%-3rem)] sm:basis-auto">
                 <div class="text-[13px] font-bold leading-snug text-white sm:truncate">{{ a.title }}</div>
@@ -99,6 +102,12 @@ const KIND_ICON: Record<AlertKind, IconName> = {
     </section>
   `,
   styles: `
+    :host { display: block; position: relative; margin-top: 44px; }
+    .bell { filter: drop-shadow(0 18px 22px rgba(0, 0, 0, .28)); animation: bell-float 5s ease-in-out infinite; }
+    .bell.ringing { animation: bell-float 5s ease-in-out infinite, bell-ring 4s ease-in-out infinite 1.2s; transform-origin: 50% 8%; }
+    @keyframes bell-float { 50% { translate: 0 -7px; } }
+    @keyframes bell-ring { 0%, 84%, 100% { rotate: 0deg; } 87% { rotate: -10deg; } 90% { rotate: 9deg; } 93% { rotate: -6deg; } 96% { rotate: 3deg; } }
+    @media (prefers-reduced-motion: reduce) { .bell, .bell.ringing { animation: none; } }
     .hero { background: radial-gradient(110% 140% at 100% 50%, #0a4954 0%, #003841 55%, #003038 100%); }
     .ring { position: absolute; inset: 0; border-radius: 50%; border: 1px solid rgba(255,255,255,.07); }
     .r2 { inset: 56px; } .r3 { inset: 112px; border-color: rgba(224,169,97,.16); }
@@ -124,7 +133,7 @@ export class PriorityHeroComponent {
   readonly ack = output<DashboardAlert>();
   readonly viewAll = output<void>();
 
-  protected icon(kind: AlertKind): IconName {
+  protected icon(kind: AlertKind): DimIconName {
     return KIND_ICON[kind];
   }
 }

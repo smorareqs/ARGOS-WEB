@@ -4,8 +4,8 @@ import { ACTIVE_STATUSES, CATEGORY_META, TICKET_STATUS, Ticket, TicketStatus, UR
 import { SegmentedComponent } from '../../../../shared/molecules/segmented/segmented.component';
 import { EmptyStateComponent } from '../../../../shared/molecules/empty-state/empty-state.component';
 import { BoardCardDirective, BoardComponent, BoardMove } from '../../../../shared/organisms/board/board.component';
-import { CellDefDirective, DataTableComponent, TableColumn } from '../../../../shared/organisms/data-table/data-table.component';
 import { IconComponent } from '../../../../shared/atoms/icon/icon.component';
+import { DimIconComponent } from '../../../../shared/atoms/dim-icon/dim-icon.component';
 import { InputComponent } from '../../../../shared/atoms/input/input.component';
 import { SelectComponent } from '../../../../shared/atoms/select/select.component';
 import { BadgeComponent } from '../../../../shared/atoms/badge/badge.component';
@@ -24,7 +24,7 @@ const BOARD: readonly TicketStatus[] = ['open', 'assigned', 'in_progress', 'reso
 @Component({
   selector: 'app-tickets-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [SegmentedComponent, EmptyStateComponent, BoardComponent, BoardCardDirective, DataTableComponent, CellDefDirective, IconComponent, InputComponent, SelectComponent, BadgeComponent, AvatarComponent],
+  imports: [SegmentedComponent, EmptyStateComponent, BoardComponent, BoardCardDirective, IconComponent, DimIconComponent, InputComponent, SelectComponent, BadgeComponent, AvatarComponent],
   template: `
     <div class="mb-4 flex flex-wrap items-center gap-3">
       <app-segmented [options]="viewOptions" [value]="view()" (valueChange)="viewChange.emit($event)" [iconOnly]="true" ariaLabel="Vista" />
@@ -45,18 +45,47 @@ const BOARD: readonly TicketStatus[] = ['open', 'assigned', 'in_progress', 'reso
         <app-empty-state kind="done" title="Sin incidencias" message="Cuando alguien reporte una falla desde la app o desde aquí, aparece en este tablero." />
       </div>
     } @else if (view() === 'tabla') {
-      <app-data-table [columns]="cols" [rows]="filtered()" [rowKey]="key" [activeKey]="active() ?? null" (rowClick)="opened.emit($event.id)">
-        <ng-template appCell="title" let-t>
-          <div class="flex items-center gap-2.5">
-            <span class="h-2.5 w-2.5 shrink-0 rounded-pill" [style.background]="u(t).dot"></span>
-            <div class="min-w-0"><div class="truncate text-[13px] font-bold text-primary">{{ t.title }}</div><div class="text-[11px] text-text-secondary"><span class="font-mono">#{{ t.number }}</span> · <span [class.font-mono]="!!t.property_code">{{ where(t) }}</span></div></div>
-          </div>
-        </ng-template>
-        <ng-template appCell="status" let-t><app-badge [tone]="s(t).tone" size="sm">{{ s(t).label }}</app-badge></ng-template>
-        <ng-template appCell="age" let-t><span class="tabular">{{ age(t) }}</span></ng-template>
-        <ng-template appCell="who" let-t>{{ t.vendor_name ?? t.assignee_name ?? '—' }}</ng-template>
-        <ng-template appCell="cost" let-t><span class="tabular">{{ t.cost === null ? '—' : money(t.cost) }}</span></ng-template>
-      </app-data-table>
+      <div class="overflow-hidden rounded-card border border-border-card bg-surface shadow-e1">
+        <div class="flex items-center gap-4 border-b border-divider px-5 py-2.5 text-[10.5px] uppercase tracking-[1px] text-text-secondary">
+          <span class="flex-1">Incidencia</span>
+          <span class="hidden w-[130px] md:block">Estado</span>
+          <span class="hidden w-[190px] lg:block">Responsable</span>
+          <span class="hidden w-[80px] text-right lg:block">Costo</span>
+          <span class="w-[52px] text-right">Edad</span>
+        </div>
+        <ul>
+          @for (t of listed(); track t.id; let i = $index) {
+            <li class="reveal-soft" [style.--i]="i">
+              <button type="button" class="trow" [class.is-active]="t.id === active()" [class.done]="t.status === 'closed' || t.status === 'rejected'" [style.--u]="u(t).dot" [style.--st]="s(t).color" (click)="opened.emit(t.id)">
+                <span class="tile" [style.background]="c(t).bg"><app-dim-icon [name]="c(t).dim" [size]="32" /></span>
+                <span class="min-w-0 flex-1">
+                  <span class="flex items-center gap-2">
+                    <span class="urg">{{ u(t).label }}</span>
+                    <span class="font-mono text-[11px] text-text-secondary">#{{ t.number }}</span>
+                  </span>
+                  <span class="mt-0.5 line-clamp-2 text-[14px] font-bold leading-snug text-primary">{{ t.title }}</span>
+                  <span class="block truncate text-[11.5px] text-text-secondary"><span [class.font-mono]="!!t.property_code">{{ where(t) }}</span>@if (t.asset_name) { · {{ t.asset_name }} }</span>
+                  <span class="mt-1 md:hidden"><span class="st"><span class="dot"></span>{{ s(t).label }}</span></span>
+                </span>
+                <span class="hidden w-[130px] md:block"><span class="st pill"><span class="dot"></span>{{ s(t).label }}</span></span>
+                <span class="hidden w-[190px] min-w-0 items-center gap-2 text-[12.5px] lg:flex">
+                  @if (t.assignee_name) {
+                    <app-avatar [initials]="ini(t.assignee_name)" [name]="t.assignee_name" [size]="26" /><span class="truncate text-text-body">{{ t.assignee_name }}</span>
+                  } @else if (t.vendor_name) {
+                    <app-icon name="building" [size]="15" class="shrink-0 text-text-secondary" /><span class="truncate text-text-body">{{ t.vendor_name }}</span>
+                  } @else {
+                    <span class="font-bold text-danger">Sin responsable</span>
+                  }
+                </span>
+                <span class="tabular hidden w-[80px] text-right text-[13px] font-bold text-primary lg:block">{{ t.cost === null ? '—' : money(t.cost) }}</span>
+                <span class="tabular w-[52px] text-right text-[13px] font-bold text-text-body">{{ age(t) }}</span>
+              </button>
+            </li>
+          } @empty {
+            <li class="px-5 py-10 text-center text-[13px] text-text-secondary">Ninguna incidencia coincide con los filtros.</li>
+          }
+        </ul>
+      </div>
     } @else {
       <app-board [columns]="columns" [items]="boardItems()" [columnOf]="columnOf" [keyOf]="key" [canDrag]="canDrag" (moved)="onMove($event)">
         <ng-template appBoardCard let-t>
@@ -65,7 +94,10 @@ const BOARD: readonly TicketStatus[] = ['open', 'assigned', 'in_progress', 'reso
               <app-badge [tone]="u(t).tone" size="sm">{{ u(t).label }}</app-badge>
               <span class="tabular text-[11.5px] text-text-secondary">#{{ t.number }} · {{ age(t) }}</span>
             </span>
-            <span class="mt-2 block text-[13.5px] font-bold leading-snug text-primary">{{ t.title }}</span>
+            <span class="mt-2.5 flex items-start gap-2.5">
+              <span class="tile sm" [style.background]="c(t).bg"><app-dim-icon [name]="c(t).dim" [size]="26" [animate]="false" /></span>
+              <span class="text-[13.5px] font-bold leading-snug text-primary">{{ t.title }}</span>
+            </span>
             <span class="mt-1 flex items-center gap-1.5 truncate text-[12px] text-text-secondary">
               @if (t.asset_category) { <app-icon [name]="c(t).icon" [size]="13" /> }
               <span class="shrink-0" [class.font-mono]="!!t.property_code">{{ where(t) }}</span>@if (t.asset_name) { <span class="truncate">· {{ t.asset_name }}</span> }
@@ -97,6 +129,23 @@ const BOARD: readonly TicketStatus[] = ['open', 'assigned', 'in_progress', 'reso
     .icard { transition: box-shadow var(--dur-fast), transform var(--spring-snappy-dur) var(--spring-snappy); }
     .icard:hover { box-shadow: var(--shadow-e2); transform: translateY(-1px); }
     .icard.is-active { box-shadow: 0 0 0 2px var(--color-secondary); }
+    .trow { position: relative; display: flex; width: 100%; align-items: center; gap: 12px; padding: 12px 16px; text-align: left;
+      border-bottom: 1px solid var(--color-divider); transition: background-color var(--dur-fast); }
+    @media (min-width: 640px) { .trow { gap: 16px; padding: 12px 20px; } }
+    li:last-child .trow { border-bottom: 0; }
+    .trow:hover { background: var(--color-surface-soft); }
+    .trow.is-active { background: rgba(197, 135, 60, .07); }
+    .trow::before { content: ''; position: absolute; left: 0; top: 10px; bottom: 10px; width: 3px; border-radius: 0 3px 3px 0; background: var(--u); }
+    .trow.done { opacity: .62; }
+    .tile { display: grid; place-items: center; width: 44px; height: 44px; flex-shrink: 0; border-radius: 13px; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05);
+      transition: transform var(--spring-snappy-dur) var(--spring-snappy); }
+    .tile.sm { width: 34px; height: 34px; border-radius: 10px; }
+    :is(.trow, .icard):hover .tile { transform: translateY(-2px) rotate(-3deg); }
+    .urg { display: inline-flex; height: 19px; align-items: center; padding: 0 7px; border-radius: 99px; font-size: 10.5px; font-weight: 700;
+      color: var(--u); background: color-mix(in srgb, var(--u) 13%, transparent); }
+    .st { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 700; color: var(--st); }
+    .st.pill { height: 24px; padding: 0 10px; border-radius: 99px; background: color-mix(in srgb, var(--st) 12%, transparent); }
+    .dot { width: 7px; height: 7px; border-radius: 99px; background: var(--st); }
     .plan { background: var(--color-teal-washed); color: var(--color-teal-muted); }
     .chip-on { border: 1px solid var(--color-border-field); color: var(--color-text-body); background: var(--color-surface); }
     .chip-on[aria-pressed='true'] { border-color: var(--color-primary); background: var(--color-primary); color: #fff; }
@@ -140,13 +189,6 @@ export class TicketsPanelComponent {
     color: TICKET_STATUS[k].color,
     empty: k === 'open' ? 'Nada nuevo por revisar' : k === 'resolved' ? 'Las resueltas esperan su cierre aquí' : 'Sin incidencias aquí',
   }));
-  protected readonly cols: TableColumn<Ticket>[] = [
-    { key: 'title', label: 'Incidencia' },
-    { key: 'status', label: 'Estado', width: '130px' },
-    { key: 'who', label: 'Responsable', priority: 'md' },
-    { key: 'cost', label: 'Costo', align: 'right', width: '100px', priority: 'md' },
-    { key: 'age', label: 'Edad', align: 'right', width: '90px' },
-  ];
 
   /** Si quien mira atiende incidencias, puede ver solo las suyas. */
   protected readonly mine = computed(() => this.store.canExecute() && this.store.tickets().some((t) => t.assigned_to === this.store.meId()));
@@ -168,6 +210,13 @@ export class TicketsPanelComponent {
       (!this.onlyMine() || t.assigned_to === this.store.meId()) &&
       (!q || String(t.number) === q || `${t.title} ${placeOf(t)} ${t.property_name ?? ''} ${t.asset_name ?? ''}`.toLowerCase().includes(q)),
     );
+  });
+
+  /** Tabla: abiertas primero (por urgencia), luego resueltas y cerradas. */
+  protected readonly listed = computed(() => {
+    const st: Record<TicketStatus, number> = { open: 0, assigned: 0, in_progress: 0, resolved: 1, closed: 2, rejected: 2 };
+    const ur: Record<Urgency, number> = { critical: 0, high: 1, medium: 2, low: 3 };
+    return [...this.filtered()].sort((a, b) => st[a.status] - st[b.status] || ur[a.urgency] - ur[b.urgency] || b.created_at.localeCompare(a.created_at));
   });
 
   /** El tablero muestra abiertas y las resueltas de los últimos 14 días. */

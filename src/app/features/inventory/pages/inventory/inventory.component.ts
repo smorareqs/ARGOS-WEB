@@ -17,6 +17,7 @@ import {
 } from '../../models/inventory.model';
 import { StockFormComponent } from '../../components/stock-form/stock-form.component';
 import { ItemFormComponent } from '../../components/item-form/item-form.component';
+import { CATEGORY_META, ItemSort, ItemTableComponent } from '../../components/item-table/item-table.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { CanDirective } from '../../../../core/auth/can.directive';
 import { PageHeaderComponent } from '../../../../shared/molecules/page-header/page-header.component';
@@ -37,13 +38,6 @@ import { downloadCsv } from '../../../../shared/utils/csv';
 
 type Tab = 'articulos' | 'existencias' | 'movimientos' | 'custodias' | 'discrepancias' | 'reposicion';
 
-const CAT_DOT: Record<ItemCategory, string> = {
-  linens: '#3a6168',
-  amenities: '#c5873c',
-  cleaning: '#5a8a6b',
-  kitchen: '#9a6722',
-  keys: '#003841',
-};
 
 /**
  * Screen · Inventario (W-F1 artículos, W-F2 existencias, W-F3 movimientos,
@@ -58,6 +52,7 @@ const CAT_DOT: Record<ItemCategory, string> = {
     DatePipe,
     StockFormComponent,
     ItemFormComponent,
+    ItemTableComponent,
     CanDirective,
     PageHeaderComponent,
     DemoDataNoteComponent,
@@ -109,24 +104,9 @@ const CAT_DOT: Record<ItemCategory, string> = {
             <div class="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center">
               <app-input class="min-w-0 lg:w-[320px]" type="search" icon="search" [compact]="true" placeholder="Buscar artículo o SKU" ariaLabel="Buscar artículos" [(value)]="search" />
               <app-filter-chips [options]="categoryChips()" [value]="cat() ?? 'all'" (valueChange)="set('cat', $event === 'all' ? null : $event)" ariaLabel="Categoría" />
+              <app-select class="lg:ml-auto lg:w-[200px]" [compact]="true" [options]="sortOptions" [value]="itemSort()" (changed)="itemSort.set($any($event))" ariaLabel="Ordenar artículos" />
             </div>
-            <app-data-table [columns]="itemCols" [rows]="filteredItems()" [rowKey]="itemKey" [loading]="store.loading()" (rowClick)="openStock('adjustment', $event.id)">
-              <ng-template appCell="name" let-i>
-                <div class="min-w-0">
-                  <div class="truncate text-[13px] font-bold text-primary">{{ i.name }}</div>
-                  <div class="font-mono text-[11px] text-text-secondary">{{ i.sku }}</div>
-                </div>
-              </ng-template>
-              <ng-template appCell="category" let-i><span class="flex items-center gap-2"><span class="h-2 w-2 rounded-pill" [style.background]="catDot(i)"></span>{{ catLabel(i) }}</span></ng-template>
-              <ng-template appCell="total" let-i>
-                <div class="flex items-center justify-end gap-3">
-                  @if (i.min > 0) {
-                    <span class="hidden h-[5px] w-24 overflow-hidden rounded-pill bg-track sm:block"><span class="block h-full rounded-pill" [class]="i.total < i.min ? 'bg-warning' : 'bg-success'" [style.width.%]="pctOf(i)"></span></span>
-                  }
-                  <span class="tabular w-14 text-right font-bold" [class]="i.min > 0 && i.total < i.min ? 'text-warning' : 'text-primary'">{{ i.total }}</span>
-                </div>
-              </ng-template>
-            </app-data-table>
+            <app-item-table [items]="filteredItems()" [loading]="store.loading()" [sort]="itemSort()" [clickable]="store.canManage()" (picked)="openStock('adjustment', $event.id)" />
           }
           @case ('existencias') {
             <div class="mb-4 flex flex-wrap items-center gap-3">
@@ -353,7 +333,7 @@ export class InventoryComponent {
 
   protected readonly categoryChips = computed(() => [
     { value: 'all', label: 'Todas', count: this.store.items().length },
-    ...(Object.keys(CATEGORY_LABEL) as ItemCategory[]).map((c) => ({ value: c, label: CATEGORY_LABEL[c], dot: CAT_DOT[c], count: this.store.items().filter((i) => i.category === c).length })),
+    ...(Object.keys(CATEGORY_LABEL) as ItemCategory[]).map((c) => ({ value: c, label: CATEGORY_LABEL[c], dot: CATEGORY_META[c].dot, count: this.store.items().filter((i) => i.category === c).length })),
   ]);
   protected readonly filteredItems = computed(() => {
     const q = this.search().trim().toLowerCase();
@@ -387,12 +367,11 @@ export class InventoryComponent {
   protected readonly person = computed(() => this.store.custody().find((g) => g.person_id === this.persona()) ?? null);
   protected readonly stockKind = computed(() => (this.mov() === 'entry' || this.mov() === 'transfer' || this.mov() === 'adjustment' ? this.mov() as StockChange['kind'] : null));
 
-  protected readonly itemCols: TableColumn<Item>[] = [
-    { key: 'name', label: 'Artículo', sortable: true, value: (i) => i.name },
-    { key: 'category', label: 'Categoría', sortable: true, priority: 'md', value: (i) => CATEGORY_LABEL[i.category] },
-    { key: 'unit', label: 'Unidad', priority: 'lg', value: (i) => i.unit },
-    { key: 'min', label: 'Mínimo', sortable: true, align: 'right', priority: 'md', value: (i) => i.min },
-    { key: 'total', label: 'Existencia', sortable: true, align: 'right', value: (i) => i.total },
+  protected readonly itemSort = signal<ItemSort>('urgency');
+  protected readonly sortOptions = [
+    { value: 'urgency', label: 'Primero lo que falta' },
+    { value: 'name', label: 'Por nombre' },
+    { value: 'stock', label: 'Menor existencia' },
   ];
   protected readonly stockCols: TableColumn<Item>[] = [
     { key: 'name', label: 'Artículo', sortable: true, value: (i) => i.name },
@@ -443,15 +422,6 @@ export class InventoryComponent {
   }
   protected isLowHere(i: Item): boolean {
     return i.min > 0 && i.total < i.min;
-  }
-  protected pctOf(i: Item): number {
-    return Math.min(100, (i.total / Math.max(1, i.min * 2)) * 100);
-  }
-  protected catLabel(i: Item): string {
-    return CATEGORY_LABEL[i.category];
-  }
-  protected catDot(i: Item): string {
-    return CAT_DOT[i.category];
   }
   protected moveLabel(m: Movement): string {
     return MOVEMENT_LABEL[m.type];

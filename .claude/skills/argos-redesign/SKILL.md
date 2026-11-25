@@ -100,6 +100,8 @@ Adapta esas reglas; no copies el diseño de nadie.
   que explique qué es y cuándo se usa.
 * Con ilustraciones nuevas, sigue el estilo de `app-spot-icon` (la guía está en sistema.md).
   Pruébalas en un tablero a 40, 56 y 96 px antes de integrarlas.
+* Si un ícono representa algo (indicador, tipo, estado vacío), usa `app-dim-icon`; si falta el
+  objeto, dibújalo con `scripts/dim-icons` (ver sistema.md).
 * Personas van con `app-avatar` y empresas con `app-tenant-mark`; nunca con iniciales.
 * Las animaciones tienen que contar algo del producto e incluir siempre
   `prefers-reduced-motion`.

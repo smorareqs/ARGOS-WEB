@@ -1,5 +1,6 @@
 import { BadgeTone } from '../../../shared/atoms/badge/badge.component';
 import { SpotIconName } from '../../../shared/atoms/spot-icon/spot-icon.component';
+import { DimIconName } from '../../../shared/atoms/dim-icon/dim-icon.component';
 
 /** Contrato de tareas (fase02.md §4 · `GET /tasks`, lo sirve el módulo de Persona B). */
 
@@ -70,12 +71,16 @@ export interface TaskMove {
   readonly reason: string;
 }
 
-export const TYPE_META: Record<TaskType, { label: string; short: string; spot: SpotIconName }> = {
-  checkout_cleaning: { label: 'Limpieza de salida', short: 'Salida', spot: 'cleaning' },
-  deep_cleaning: { label: 'Limpieza profunda', short: 'Profunda', spot: 'cleaning' },
-  touch_up: { label: 'Repaso antes de llegada', short: 'Repaso', spot: 'arrivals' },
-  inspection: { label: 'Inspección', short: 'Inspección', spot: 'evidence' },
-  maintenance: { label: 'Mantenimiento', short: 'Manten.', spot: 'maintenance' },
+/**
+ * Cada tipo con su ícono con volumen y su color (fondo suave + tinta), para
+ * que en el calendario se distinga de un vistazo qué es cada bloque.
+ */
+export const TYPE_META: Record<TaskType, { label: string; short: string; spot: SpotIconName; dim: DimIconName; bg: string; ink: string }> = {
+  checkout_cleaning: { label: 'Limpieza de salida', short: 'Salida', spot: 'cleaning', dim: 'cleaning', bg: '#fbe3d4', ink: '#a2481d' },
+  deep_cleaning: { label: 'Limpieza profunda', short: 'Profunda', spot: 'cleaning', dim: 'house', bg: '#dcece4', ink: '#2f6a52' },
+  touch_up: { label: 'Repaso antes de llegada', short: 'Repaso', spot: 'arrivals', dim: 'room', bg: '#fcefd0', ink: '#8a5a1a' },
+  inspection: { label: 'Inspección', short: 'Inspección', spot: 'evidence', dim: 'search', bg: '#dbeaf0', ink: '#2c6378' },
+  maintenance: { label: 'Mantenimiento', short: 'Manten.', spot: 'maintenance', dim: 'incident', bg: '#f6dcd8', ink: '#892f26' },
 };
 
 export const STATUS_META: Record<TaskStatus, { label: string; tone: BadgeTone; color: string }> = {

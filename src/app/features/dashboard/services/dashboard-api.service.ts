@@ -25,7 +25,10 @@ interface RawDashboard {
   readonly top_alerts: readonly Alert[];
   readonly incidents: { readonly open: number; readonly urgent: number; readonly unassigned: number };
   readonly upcoming: readonly Plan[];
-  readonly pins: readonly { id: string; code: string; name: string; zone: string | null; lat: number | null; lng: number | null; status: string }[];
+  readonly pins: readonly {
+    id: string; code: string; name: string; type?: string; building?: string | null; zone: string | null;
+    lat: number | null; lng: number | null; open_tickets?: number; status: string;
+  }[];
   readonly activity: readonly AuditRecord[];
   readonly tasks: {
     readonly available: boolean; readonly done: number; readonly total: number; readonly in_progress: number; readonly late: number;

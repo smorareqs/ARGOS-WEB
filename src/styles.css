@@ -9,6 +9,7 @@
 
 @import 'tailwindcss';
 @import './app/shared/tokens/argos-tokens.css';
+@import './app/shared/atoms/dim-icon/dim-icon.css';
 
 @layer base {
   /* ── Base ─────────────────────────────────────────────────────────── */
@@ -155,6 +156,35 @@
 
   /* ── Entradas ─────────────────────────────────────────────────────── */
   /* Aparición escalonada: style="--i: n" (máximo 8 pasos de 30 ms). */
+  /* Inclinación 3D que sigue al cursor (directiva appTilt). Lo que lleve .pop
+     dentro se adelanta y parece salir de la tarjeta. */
+  .tilt {
+    position: relative;
+    transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg));
+    transform-style: preserve-3d;
+    transition: transform 520ms var(--spring-standard), box-shadow var(--dur-base) var(--ease-standard);
+  }
+  .tilt.is-tilting {
+    transition: transform 90ms linear, box-shadow var(--dur-base) var(--ease-standard);
+    box-shadow: 0 18px 40px -12px rgba(0, 56, 65, 0.28);
+  }
+  .tilt::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    background: radial-gradient(circle at var(--gx, 50%) var(--gy, 0%), rgba(255, 255, 255, 0.45), transparent 55%);
+    opacity: 0;
+    transition: opacity var(--dur-base);
+  }
+  .tilt.is-tilting::after { opacity: 1; }
+  .tilt .pop {
+    transform: translateZ(36px);
+    transition: transform 520ms var(--spring-standard);
+  }
+  .tilt.is-tilting .pop { transform: translateZ(56px) scale(1.04); }
+
   .reveal {
     animation: argos-rise var(--dur-slow) var(--ease-enter) both;
     animation-delay: calc(min(var(--i, 0), 8) * var(--stagger));

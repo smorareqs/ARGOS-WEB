@@ -25,6 +25,7 @@ import { PropertyCoverComponent } from '../../components/property-cover/property
 import { PropertyFormComponent } from '../../components/property-form/property-form.component';
 import { AccessPanelComponent } from '../../components/access-panel/access-panel.component';
 import { placeOf } from '../../components/property-card/property-card.component';
+import { DimIconComponent } from '../../../../shared/atoms/dim-icon/dim-icon.component';
 
 type Tab = 'datos' | 'acceso' | 'checklist' | 'asignados' | 'propietarios' | 'historial';
 
@@ -55,6 +56,7 @@ const FIELD_LABEL: Record<string, string> = {
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     DatePipe,
+    DimIconComponent,
     NgTemplateOutlet,
     RouterLink,
     TabsComponent,

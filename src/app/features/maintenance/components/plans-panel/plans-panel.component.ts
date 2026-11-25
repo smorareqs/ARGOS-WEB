@@ -4,6 +4,7 @@ import { MaintenanceStore } from '../../store/maintenance.store';
 import { CATEGORY_META, DUE_META, Plan, frequencyLabel, placeOf } from '../../models/maintenance.model';
 import { ButtonComponent } from '../../../../shared/atoms/button/button.component';
 import { IconComponent } from '../../../../shared/atoms/icon/icon.component';
+import { DimIconComponent } from '../../../../shared/atoms/dim-icon/dim-icon.component';
 import { BadgeComponent } from '../../../../shared/atoms/badge/badge.component';
 import { EmptyStateComponent } from '../../../../shared/molecules/empty-state/empty-state.component';
 import { addDays, dayKey, toDayKey } from '../../../../shared/utils/time';
@@ -18,7 +19,7 @@ const WEEKDAYS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
 @Component({
   selector: 'app-plans-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DatePipe, ButtonComponent, IconComponent, BadgeComponent, EmptyStateComponent],
+  imports: [DatePipe, ButtonComponent, IconComponent, DimIconComponent, BadgeComponent, EmptyStateComponent],
   template: `
     @if (!store.loading() && !store.plans().length) {
       <div class="rounded-card border border-border-card bg-surface shadow-e1">
@@ -43,8 +44,8 @@ const WEEKDAYS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
               <div class="mcell min-h-[78px] rounded-sm p-1.5" [class.is-out]="!c.inMonth" [class.is-today]="c.key === today">
                 <div class="tabular text-[11.5px]" [class]="c.key === today ? 'font-bold text-secondary' : 'text-text-secondary'">{{ c.day }}</div>
                 @for (p of c.plans.slice(0, 2); track p.id) {
-                  <button type="button" class="chip mt-1 block w-full truncate rounded-[4px] px-1.5 py-0.5 text-left text-[10.5px] font-bold" [class]="chipClass(p)" [title]="p.name + ' · ' + p.asset_name + ' · ' + where(p)" (click)="opened.emit(p)">
-                    {{ p.asset_name }}
+                  <button type="button" class="chip mt-1 flex w-full items-center gap-1 rounded-[5px] py-0.5 pl-0.5 pr-1.5 text-left text-[10.5px] font-bold" [class]="chipClass(p)" [title]="p.name + ' · ' + p.asset_name + ' · ' + where(p)" (click)="opened.emit(p)">
+                    <app-dim-icon class="hidden sm:inline-block" [name]="cat[p.asset_category].dim" [size]="18" [animate]="false" /><span class="truncate">{{ p.asset_name }}</span>
                   </button>
                 }
                 @if (c.plans.length > 2) { <div class="mt-0.5 text-[10px] font-bold text-text-secondary">+{{ c.plans.length - 2 }} más</div> }
@@ -58,8 +59,8 @@ const WEEKDAYS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
           <ul class="divide-y divide-divider">
             @for (p of upcoming(); track p.id) {
               <li>
-                <button type="button" class="row flex w-full items-start gap-3 px-5 py-3 text-left" (click)="opened.emit(p)">
-                  <span class="cat mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-tile"><app-icon [name]="cat[p.asset_category].icon" [size]="15" /></span>
+                <button type="button" class="row flex w-full items-start gap-3.5 px-5 py-3.5 text-left" (click)="opened.emit(p)">
+                  <span class="tile h-11 w-11 rounded-[13px]" [style.background]="cat[p.asset_category].bg"><app-dim-icon [name]="cat[p.asset_category].dim" [size]="32" /></span>
                   <span class="min-w-0 flex-1">
                     <span class="flex items-center justify-between gap-2">
                       <span class="truncate text-[13px] font-bold text-primary">{{ p.name }}</span>
@@ -86,7 +87,9 @@ const WEEKDAYS = ['lun', 'mar', 'mié', 'jue', 'vie', 'sáb', 'dom'];
     .mcell.is-today { box-shadow: inset 0 0 0 1.5px var(--color-secondary); }
     .chip { transition: filter var(--dur-fast); }
     .chip:hover { filter: brightness(0.96); }
-    .cat { background: var(--color-teal-washed); color: var(--color-teal-muted); }
+    .tile { display: grid; place-items: center; flex-shrink: 0; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05);
+      transition: transform var(--spring-snappy-dur) var(--spring-snappy); }
+    .row:hover .tile { transform: translateY(-2px) rotate(-3deg); }
     .row { transition: background var(--dur-fast); }
     .row:hover { background: var(--color-surface-soft); }
   `,

@@ -1,5 +1,6 @@
 import { BadgeTone } from '../../../shared/atoms/badge/badge.component';
 import { IconName } from '../../../shared/atoms/icon/icon.component';
+import type { DimIconName } from '../../../shared/atoms/dim-icon/dim-icon.component';
 
 /**
  * Contrato de mantenimiento (APP/docs/plans/fase03.md §5 y §4.1 "Contrato
@@ -274,26 +275,27 @@ export const TICKET_STATUS: Record<TicketStatus, { label: string; column: string
   rejected: { label: 'Rechazada', column: 'Rechazadas', tone: 'muted', color: 'var(--color-text-muted)' },
 };
 
-export const ASSET_STATUS: Record<AssetStatus, { label: string; tone: BadgeTone }> = {
-  operational: { label: 'Operando', tone: 'success' },
-  needs_attention: { label: 'Necesita atención', tone: 'warning' },
-  in_repair: { label: 'En reparación', tone: 'info' },
-  out_of_service: { label: 'Fuera de servicio', tone: 'danger' },
+export const ASSET_STATUS: Record<AssetStatus, { label: string; tone: BadgeTone; color: string; rank: number }> = {
+  operational: { label: 'Operando', tone: 'success', color: '#5a8a6b', rank: 3 },
+  needs_attention: { label: 'Necesita atención', tone: 'warning', color: '#d08a2e', rank: 1 },
+  in_repair: { label: 'En reparación', tone: 'info', color: '#3a7f8c', rank: 2 },
+  out_of_service: { label: 'Fuera de servicio', tone: 'danger', color: '#b8432f', rank: 0 },
 };
 
-export const CATEGORY_META: Record<AssetCategory | 'none', { label: string; icon: IconName }> = {
-  elevator: { label: 'Elevador', icon: 'building' },
-  camera: { label: 'Cámaras', icon: 'eye' },
-  water: { label: 'Agua y bombas', icon: 'droplet' },
-  paint: { label: 'Pintura', icon: 'brush' },
-  appliance: { label: 'Electrodoméstico', icon: 'plug' },
-  plumbing: { label: 'Plomería', icon: 'wrench' },
-  electrical: { label: 'Electricidad', icon: 'bolt' },
-  hvac: { label: 'Aire acondicionado', icon: 'wind' },
-  hospitality: { label: 'Hotelería', icon: 'bed' },
-  furniture: { label: 'Mobiliario', icon: 'sofa' },
-  other: { label: 'Otro', icon: 'maintenance' },
-  none: { label: 'Sin activo', icon: 'maintenance' },
+/** Ícono de línea (filtros, gráficas), objeto con volumen y colores de su mosaico. */
+export const CATEGORY_META: Record<AssetCategory | 'none', { label: string; icon: IconName; dim: DimIconName; bg: string; ink: string }> = {
+  elevator: { label: 'Elevador', icon: 'building', dim: 'elevator', bg: '#e2edef', ink: '#2c5c64' },
+  camera: { label: 'Cámaras', icon: 'eye', dim: 'camera', bg: '#e8edf0', ink: '#3d5560' },
+  water: { label: 'Agua y bombas', icon: 'droplet', dim: 'water', bg: '#dcf0f4', ink: '#22677a' },
+  paint: { label: 'Pintura', icon: 'brush', dim: 'paint', bg: '#f8e2d6', ink: '#93421f' },
+  appliance: { label: 'Electrodoméstico', icon: 'plug', dim: 'appliance', bg: '#eceeea', ink: '#4e5e5c' },
+  plumbing: { label: 'Plomería', icon: 'wrench', dim: 'plumbing', bg: '#e2edef', ink: '#2c5c64' },
+  electrical: { label: 'Electricidad', icon: 'bolt', dim: 'electrical', bg: '#fbecd9', ink: '#93561a' },
+  hvac: { label: 'Aire acondicionado', icon: 'wind', dim: 'hvac', bg: '#dcf0f4', ink: '#22677a' },
+  hospitality: { label: 'Hotelería', icon: 'bed', dim: 'room', bg: '#f4ead0', ink: '#74560f' },
+  furniture: { label: 'Mobiliario', icon: 'sofa', dim: 'furniture', bg: '#fbecd9', ink: '#93561a' },
+  other: { label: 'Otro', icon: 'maintenance', dim: 'incident', bg: '#f6e1dc', ink: '#892f26' },
+  none: { label: 'Sin activo', icon: 'maintenance', dim: 'incident', bg: '#f6e1dc', ink: '#892f26' },
 };
 
 export const CATEGORIES = Object.keys(CATEGORY_META).filter((k) => k !== 'none') as AssetCategory[];

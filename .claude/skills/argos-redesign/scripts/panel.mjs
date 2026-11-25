@@ -2,7 +2,7 @@
 //
 //   node panel.mjs --routes /inicio,/propiedades,/colaboradores --out <carpeta>
 //                  [--company "Garrent"] [--mobile] [--scale 2] [--full] [--hide-notes]
-//                  [--clip "<selector>"]
+//                  [--clip "<selector>"] [--wait <ms>] [--click "<selector>"]
 //
 // Credenciales: ARGOS_LOGIN_EMAIL y ARGOS_LOGIN_PASSWORD; si no están, usa la cuenta
 // personal de BACKEND/.env (ARGOS_SEED_DEV_EMAIL / ARGOS_SEED_DEV_PASSWORD). Nunca
@@ -12,6 +12,8 @@
 // --mobile      además captura a 390×844
 // --hide-notes  quita el aviso "Simulado" (solo para capturas de producto)
 // --clip        recorta ese elemento en cada ruta
+// --click       hace clic en ese elemento antes de esperar y capturar
+// --wait        espera extra antes de cada captura (p. ej. que termine el vuelo del mapa 3D)
 import { existsSync, mkdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -46,7 +48,8 @@ const page = await openBrowser({ width: 1440, height: 900, scale });
 
 async function capture(route, suffix) {
   if (args['hide-notes']) await page.evaluate(`document.querySelectorAll('app-demo-data-note, .sim-note, .sim, .sim-tag').forEach((n) => n.remove())`);
-  await sleep(600);
+  if (args.click) await page.click(String(args.click));
+  await sleep(600 + Number(args.wait ?? 0));
   const file = join(out, `${slug(route)}-${suffix}.png`);
   if (args.clip) {
     const clip = await page.rectOf(args.clip);

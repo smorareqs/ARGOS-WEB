@@ -45,12 +45,21 @@ export interface RankingRow {
 
 export type PinStatus = 'ready' | 'cleaning' | 'occupied' | 'incident';
 
+export type PinType = 'apartment' | 'house' | 'room' | 'other';
+
 export interface MapPin {
   readonly id: string;
   readonly code: string;
   readonly name: string;
   readonly status: PinStatus;
-  /** Posición en el mapa estilizado, en % del ancho y alto. */
+  readonly type: PinType;
+  readonly building: string | null;
+  readonly zone: string | null;
+  readonly openTickets: number;
+  /** Coordenadas reales (las de la propiedad, su edificio o su zona). */
+  readonly lat: number;
+  readonly lng: number;
+  /** Posición en el lienzo del mapa ilustrado (600 × 340, ver region-geo.ts). */
   readonly x: number;
   readonly y: number;
 }

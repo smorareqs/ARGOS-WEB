@@ -56,7 +56,7 @@
       <h1 class="mt-3 font-display text-[34px] font-semibold leading-[1.05] tracking-display text-primary sm:text-[40px]">{{ p.name }}</h1>
       <div class="mt-2 flex flex-wrap items-center gap-x-2.5 gap-y-1 text-[13px] text-text-body">
         <span class="rounded-xs bg-info-soft px-1.5 py-px font-mono text-[12px] font-bold text-primary">{{ p.code }}</span>
-        <span>{{ typeLabel() }}</span>
+        <span class="inline-flex items-center gap-1"><app-dim-icon [name]="p.type" [size]="26" class="-my-1" />{{ typeLabel() }}</span>
         <span class="h-1 w-1 rounded-pill bg-disabled"></span>
         <span>{{ place() }}</span>
       </div>

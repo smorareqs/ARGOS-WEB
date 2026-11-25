@@ -50,7 +50,8 @@ const PALETTES: Record<Palette, Colors> = {
   },
 };
 
-const ORDER: Palette[] = ['day', 'dusk', 'night', 'dawn'];
+// La acuarela pide papel claro: la noche solo se usa si se pide explícitamente.
+const ORDER: Palette[] = ['day', 'dusk', 'dawn', 'day'];
 
 export interface Shape {
   d: string;

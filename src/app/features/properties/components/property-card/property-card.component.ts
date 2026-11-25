@@ -6,6 +6,8 @@ import { initials } from '../../../../core/store/session.store';
 import { Property, TYPE_LABEL } from '../../models/property.model';
 import { gapsOf, statusOf } from '../../models/property-status';
 import { PropertyCoverComponent } from '../property-cover/property-cover.component';
+import { DimIconComponent } from '../../../../shared/atoms/dim-icon/dim-icon.component';
+import { TiltDirective } from '../../../../shared/directives/tilt.directive';
 
 /**
  * Tarjeta de propiedad guiada por imagen (ref. Airbnb: portada con radio,
@@ -16,7 +18,9 @@ import { PropertyCoverComponent } from '../property-cover/property-cover.compone
 @Component({
   selector: 'app-property-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PropertyCoverComponent, AvatarStackComponent, BadgeComponent, IconComponent],
+  hostDirectives: [{ directive: TiltDirective, inputs: ['appTilt'] }],
+  host: { class: 'rounded-card' },
+  imports: [PropertyCoverComponent, DimIconComponent, AvatarStackComponent, BadgeComponent, IconComponent],
   template: `
     @let p = property();
     <button
@@ -47,7 +51,8 @@ import { PropertyCoverComponent } from '../property-cover/property-cover.compone
         }
       </div>
 
-      <div class="px-1.5 pb-1 pt-3">
+      <div class="relative px-1.5 pb-1 pt-3">
+        <span class="plate pop" [title]="typeLabel()"><app-dim-icon [name]="p.type" [size]="38" /></span>
         <div class="flex items-center gap-2 text-[11px] text-text-secondary">
           <span class="font-mono font-bold tracking-wide text-teal-muted">{{ p.code }}</span>
           <span class="h-1 w-1 rounded-pill bg-disabled"></span>
@@ -57,7 +62,7 @@ import { PropertyCoverComponent } from '../property-cover/property-cover.compone
             <span>{{ p.bedrooms }} hab.</span>
           }
         </div>
-        <div class="mt-1 truncate font-display text-[19px] font-semibold leading-tight text-primary">{{ p.name }}</div>
+        <div class="mt-1 truncate pr-12 font-display text-[19px] font-semibold leading-tight text-primary">{{ p.name }}</div>
         <div class="mt-0.5 truncate text-[12px] text-text-body">{{ place() }}</div>
         <div class="mt-3 flex items-center justify-between gap-2 border-t border-divider pt-3">
           <app-avatar-stack [people]="people()" [size]="26" />
@@ -73,11 +78,13 @@ import { PropertyCoverComponent } from '../property-cover/property-cover.compone
     :host { display: block; }
     .card { transition: transform var(--spring-standard-dur) var(--spring-standard), box-shadow var(--dur-base) var(--ease-standard),
       border-color var(--dur-base); }
-    .card:hover { transform: translateY(-3px); box-shadow: var(--shadow-e2); }
+    .card:hover { box-shadow: var(--shadow-e2); }
     .card:active { transform: translateY(-1px) scale(0.99); transition-duration: 80ms; }
     .zoom { transition: transform 300ms var(--ease-standard); }
     .card:hover .zoom { transform: scale(1.03); }
     .overlay { box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+    .plate { position: absolute; right: 6px; top: -26px; display: grid; place-items: center; width: 50px; height: 50px; border-radius: 50%;
+      background: var(--color-surface); box-shadow: 0 0 0 1px rgba(0,56,65,.06), 0 4px 12px rgba(0,56,65,.14); }
     .card.is-inactive .cover { filter: grayscale(0.85) opacity(0.75); }
     .card.is-new { border-color: var(--color-secondary); animation: flash 2.4s var(--ease-standard); }
     @keyframes flash { 0%, 40% { box-shadow: 0 0 0 6px rgba(197,135,60,.22), var(--shadow-e2); } }

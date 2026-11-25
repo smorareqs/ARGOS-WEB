@@ -1,24 +1,15 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  afterNextRender,
-  effect,
-  inject,
-  input,
-  output,
-  signal,
-  viewChild,
-} from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { filter } from 'rxjs';
+import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
+import { RouterLink, RouterLinkActive } from '@angular/router';
 import { IconComponent, IconName } from '../../atoms/icon/icon.component';
 import { AvatarComponent } from '../../atoms/avatar/avatar.component';
+import { DimIconComponent, DimIconName } from '../../atoms/dim-icon/dim-icon.component';
 
 export interface SidebarItem {
   readonly label: string;
   readonly icon: IconName;
+  /** Ícono con volumen y color de fondo de la sección. */
+  readonly dim?: DimIconName;
+  readonly tint?: string;
   readonly route: string;
   /** Contador opcional (ej. mantenimiento · 3). */
   readonly badge?: number;
@@ -44,13 +35,13 @@ export interface SidebarUser {
  * cierra el layout (clic, o al pasar el cursor sobre el botón en escritorio).
  * Presentacional: recibe secciones ya filtradas por permisos.
  *
- * El indicador activo es una sola píldora que se desliza con resorte entre
- * elementos al navegar.
+ * Cada sección es un mosaico de su color con su ícono con volumen (como la
+ * biblioteca de apps de iOS), agrupados por área; la activa lleva borde.
  */
 @Component({
   selector: 'app-sidebar',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, IconComponent, AvatarComponent],
+  imports: [RouterLink, RouterLinkActive, IconComponent, AvatarComponent, DimIconComponent],
   host: {
     class: 'sidebar-host',
     '[class.is-open]': 'open()',
@@ -58,74 +49,65 @@ export interface SidebarUser {
     '(pointerleave)': 'hover.emit(false)',
   },
   template: `
-    <nav id="argos-nav" class="side flex max-h-full flex-col rounded-sheet bg-primary pb-3 pt-2.5 font-sans" aria-label="Navegación principal">
-      <div #list class="list relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-2.5">
-        <span
-          class="indicator pointer-events-none absolute left-2.5 right-2.5 rounded-[10px]"
-          [class.is-ready]="indicatorReady()"
-          [style.opacity]="indicator().visible ? 1 : 0"
-          [style.height.px]="indicator().h"
-          [style.transform]="'translateY(' + indicator().y + 'px)'"
-          aria-hidden="true"
-        ></span>
-
+    <nav id="argos-nav" class="side flex max-h-full flex-col rounded-sheet pb-3 pt-3 font-sans" aria-label="Navegación principal">
+      <div class="list min-h-0 flex-1 overflow-y-auto overflow-x-hidden px-3">
         @for (section of sections(); track $index; let firstSection = $first) {
           @if (section.label) {
-            <div class="px-3 pb-1 pt-4 text-[10px] uppercase tracking-[1.4px] text-white/40" [class.!pt-1.5]="firstSection">
-              {{ section.label }}
-            </div>
-          } @else if (!firstSection) {
-            <div class="mx-3 my-2.5 h-px bg-white/10"></div>
+            <div class="px-1 pb-2 pt-3 text-[10.5px] font-bold uppercase tracking-[1.4px] text-text-secondary" [class.!pt-0]="firstSection">{{ section.label }}</div>
           }
-          @for (item of section.items; track item.route) {
-            <a
-              [routerLink]="item.route"
-              routerLinkActive="is-active"
-              [routerLinkActiveOptions]="{ exact: false }"
-              class="nav-item relative z-[1] flex items-center gap-3 rounded-[10px] px-3 py-[9px]"
-              (click)="navigate.emit()"
-            >
-              <app-icon [name]="item.icon" [size]="19" class="nav-icon text-white/55" />
-              <span class="nav-label truncate text-[13px] text-white/70">{{ item.label }}</span>
-              @if (item.badge) {
-                <span class="ml-auto flex h-5 min-w-5 items-center justify-center rounded-pill bg-danger px-1.5 text-[11px] font-bold text-white">{{ item.badge }}</span>
-              } @else if (item.soon) {
-                <span class="ml-auto rounded-xs border border-white/15 px-2 py-px text-[9.5px] uppercase tracking-[0.8px] text-white/45">Pronto</span>
-              }
-            </a>
-          }
+          <div class="grid grid-cols-3 gap-2" [class.mt-1]="!section.label && !firstSection">
+            @for (item of section.items; track item.route; let i = $index) {
+              <a
+                [routerLink]="item.route"
+                routerLinkActive="is-active"
+                [routerLinkActiveOptions]="{ exact: false }"
+                class="tile group"
+                [style.--tint]="item.tint ?? '#e6eeec'"
+                [style.--i]="i"
+                (click)="navigate.emit()"
+              >
+                @if (item.dim) {
+                  <app-dim-icon [name]="item.dim" [size]="38" />
+                } @else {
+                  <app-icon [name]="item.icon" [size]="22" class="text-primary" />
+                }
+                <span class="tile-label">{{ item.label }}</span>
+                @if (item.badge) {
+                  <span class="absolute right-1.5 top-1.5 flex h-5 min-w-5 items-center justify-center rounded-pill bg-danger px-1.5 text-[11px] font-bold text-white">{{ item.badge }}</span>
+                }
+              </a>
+            }
+          </div>
         }
       </div>
 
-      <div class="mx-2.5 mt-2 flex items-center gap-[11px] border-t border-white/10 px-1 pt-3">
+      <div class="mx-3 mt-3 flex items-center gap-[11px] border-t border-divider px-1 pt-3">
         <app-avatar [initials]="user().iniciales" [name]="user().nombre" tone="secondary" [size]="32" />
         <div class="min-w-0 flex-1">
-          <div class="truncate text-[12.5px] font-bold text-white">{{ user().nombre }}</div>
-          <div class="truncate text-[10.5px] text-white/55">{{ user().rol }} · {{ tenant() }}</div>
+          <div class="truncate text-[12.5px] font-bold text-primary">{{ user().nombre }}</div>
+          <div class="truncate text-[10.5px] text-text-secondary">{{ user().rol }} · {{ tenant() }}</div>
         </div>
       </div>
     </nav>
   `,
   styles: `
-    :host { position: fixed; z-index: 50; top: calc(var(--topbar-h) - 2px); left: 12px; width: 272px;
+    :host { position: fixed; z-index: 50; top: calc(var(--topbar-h) - 2px); left: 12px; width: 344px;
       max-height: calc(100dvh - var(--topbar-h) - 8px); display: flex; flex-direction: column;
       visibility: hidden; opacity: 0; transform: translateY(-6px) scale(0.98); transform-origin: 20px 0;
       transition: opacity 140ms var(--ease-exit), transform 180ms var(--ease-exit), visibility 0s linear 180ms; }
     :host(.is-open) { visibility: visible; opacity: 1; transform: none;
       transition: opacity var(--dur-fast) var(--ease-standard), transform var(--spring-snappy-dur) var(--spring-snappy), visibility 0s; }
-    @media (max-width: 639px) { :host { left: 8px; width: min(300px, calc(100vw - 16px)); } }
-    @media (prefers-reduced-motion: reduce) { :host, :host(.is-open) { transform: none; } }
-    .side { box-shadow: var(--shadow-e3), 0 0 0 1px rgba(255, 255, 255, 0.04) inset; }
+    @media (max-width: 639px) { :host { left: 8px; width: min(344px, calc(100vw - 16px)); } }
+    @media (prefers-reduced-motion: reduce) { :host, :host(.is-open) { transform: none; } .tile { animation: none !important; } }
+    .side { background: var(--color-surface); box-shadow: 0 0 0 1px rgba(0, 56, 65, .06), 0 18px 48px rgba(0, 56, 65, .22); }
     .list { scrollbar-width: none; }
-    .indicator { top: 0; background: rgba(197, 135, 60, 0.17); box-shadow: inset 0 0 0 1px rgba(224, 169, 97, 0.12); }
-    .indicator.is-ready { transition: transform var(--spring-standard-dur) var(--spring-standard),
-      height var(--dur-base) var(--ease-standard), opacity var(--dur-fast); }
-    .nav-item { transition: background-color var(--dur-fast) var(--ease-standard); }
-    .nav-item .nav-icon, .nav-item .nav-label { transition: color var(--dur-fast) var(--ease-standard); }
-    .nav-item.is-active .nav-icon { color: var(--color-secondary-light); }
-    .nav-item.is-active .nav-label { color: #fff; font-weight: 700; }
-    .nav-item:not(.is-active):hover, .nav-item:focus-visible { background: rgba(255, 255, 255, 0.06); }
-    .nav-item:not(.is-active):hover .nav-icon, .nav-item:not(.is-active):hover .nav-label { color: rgba(255,255,255,.9); }
+    .tile { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px 9px;
+      border-radius: 14px; background: color-mix(in srgb, var(--tint) 55%, #fff); transition: transform var(--spring-snappy-dur) var(--spring-snappy), background var(--dur-fast), box-shadow var(--dur-fast); }
+    :host(.is-open) .tile { animation: tile-in 380ms var(--spring-standard) backwards; animation-delay: calc(var(--i) * 30ms); }
+    @keyframes tile-in { from { opacity: 0; transform: translateY(8px) scale(.94); } }
+    .tile:hover { background: var(--tint); transform: translateY(-2px); }
+    .tile.is-active { background: var(--tint); box-shadow: inset 0 0 0 2px var(--color-primary); }
+    .tile-label { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11.5px; font-weight: 700; color: var(--color-primary); }
   `,
 })
 export class SidebarComponent {
@@ -137,32 +119,4 @@ export class SidebarComponent {
   readonly navigate = output<void>();
   /** El cursor entra (true) o sale (false) del panel: el layout cierra el vistazo. */
   readonly hover = output<boolean>();
-
-  private readonly list = viewChild.required<ElementRef<HTMLElement>>('list');
-  protected readonly indicator = signal({ y: 0, h: 0, visible: false });
-  protected readonly indicatorReady = signal(false);
-
-  constructor() {
-    inject(Router)
-      .events.pipe(filter((e) => e instanceof NavigationEnd), takeUntilDestroyed())
-      .subscribe(() => this.measure());
-    afterNextRender(() => {
-      this.measure();
-      setTimeout(() => this.indicatorReady.set(true), 60);
-    });
-    effect(() => {
-      this.open();
-      this.sections();
-      setTimeout(() => this.measure(), 0);
-    });
-  }
-
-  private measure(): void {
-    requestAnimationFrame(() => {
-      const active = this.list().nativeElement.querySelector<HTMLElement>('.nav-item.is-active');
-      this.indicator.set(
-        active ? { y: active.offsetTop, h: active.offsetHeight, visible: true } : { ...this.indicator(), visible: false },
-      );
-    });
-  }
 }

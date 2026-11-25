@@ -1,3 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- ARGOS - logotipo oficial. Una casa trazada con la greca griega en un solo trazo (Argos, el guardian de la mitologia griega). -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="11" fill="#003841"/><g transform="translate(9.6 9.6) scale(0.6)"><path d="M7 43V20.5L24 7l17 13.5V43H15.5V26.5h17V35H23.5" fill="none" stroke="#FFFFFF" stroke-width="6" stroke-linejoin="miter"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 48 48"><rect x="1" y="1" width="46" height="46" rx="11" fill="#003841" stroke="#f6f2ea" stroke-width="2"/><path transform="translate(9.6 9.6) scale(0.6)" d="M7 43V20.5L24 7l17 13.5V43H15.5V26.5h17V35H23.5" fill="none" stroke="#fff" stroke-width="6" stroke-linejoin="miter"/></svg>

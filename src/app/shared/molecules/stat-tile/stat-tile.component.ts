@@ -1,23 +1,31 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { IconComponent, IconName } from '../../atoms/icon/icon.component';
 import { CountUpComponent } from '../../atoms/count-up/count-up.component';
+import { DIM_FROM_LINE, DimIconComponent } from '../../atoms/dim-icon/dim-icon.component';
+import { TiltDirective } from '../../directives/tilt.directive';
 
 export type StatTone = 'primary' | 'gold' | 'warning' | 'danger' | 'success';
 
 /**
  * Molécula · indicador (stat-tile, ux-ui.md §2.6). Número protagonista en
  * grande que cuenta al aparecer, total opcional, barra de progreso y nota.
+ * El concepto se dibuja con su ícono con volumen (app-dim-icon) si existe.
  */
 @Component({
   selector: 'app-stat-tile',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent, CountUpComponent],
+  imports: [IconComponent, CountUpComponent, DimIconComponent],
   template: `
     <div class="flex items-start justify-between gap-3">
-      <span class="text-[10.5px] uppercase tracking-[1px] text-text-secondary">{{ label() }}</span>
-      <span class="flex h-8 w-8 items-center justify-center rounded-sm" [class]="iconWrap()">
-        <app-icon [name]="icon()" [size]="16" />
-      </span>
+      <span class="text-[10.5px] uppercase tracking-[1px] text-text-secondary" [class.pr-16]="dim()">{{ label() }}</span>
+      @if (dim(); as d) {
+        <!-- Sale de la tarjeta: sobresale por arriba y se adelanta al inclinarla -->
+        <app-dim-icon class="pop pointer-events-none absolute -top-8 right-0" [name]="d" [size]="78" />
+      } @else {
+        <span class="flex h-8 w-8 items-center justify-center rounded-sm" [class]="iconWrap()">
+          <app-icon [name]="icon()" [size]="16" />
+        </span>
+      }
     </div>
     <div class="mt-1 flex items-baseline gap-1">
       <span class="font-display text-[38px] font-semibold leading-none tracking-display text-primary">
@@ -36,8 +44,9 @@ export type StatTone = 'primary' | 'gold' | 'warning' | 'danger' | 'success';
       <p class="mt-2.5 text-[12px] leading-snug text-text-body">{{ note() }}</p>
     }
   `,
+  hostDirectives: [TiltDirective],
   host: {
-    class: 'block rounded-card border border-border-card bg-surface p-[18px] shadow-e1',
+    class: 'group mt-7 block rounded-card border border-border-card bg-surface p-[18px] shadow-e1',
   },
   styles: `
     .bar { width: var(--w); animation: grow 900ms var(--ease-enter) both 150ms; transform-origin: left; }
@@ -51,6 +60,8 @@ export class StatTileComponent {
   readonly icon = input<IconName>('metrics');
   readonly tone = input<StatTone>('primary');
   readonly note = input<string | null>(null);
+
+  protected readonly dim = computed(() => DIM_FROM_LINE[this.icon()] ?? null);
 
   protected readonly percent = computed(() => {
     const t = this.total();

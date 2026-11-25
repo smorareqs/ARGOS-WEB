@@ -45,6 +45,7 @@ elemento, máx. 8). Siempre `@media (prefers-reduced-motion: reduce)`.
 | `app-button` | `variant` (primary = terracota, secondary = teal lavado, tertiary, ghost, danger, pill, link, icon), `size`, `loading`, `full` | Toda acción; una sola `primary` por vista |
 | `app-icon` | `name` (~100 íconos de línea; nuevos en fase 2: pencil, grip, camera, checklist, chevron-up; en fase 3: droplet, wrench, bolt, wind, plug, brush, sofa, file, upload; en fase 4: arrow-down, arrow-up, wallet), `size` | Controles, navegación, metadatos |
 | `app-spot-icon` | `name`, `size`, `tint` | Ilustración que representa un concepto o tipo de tarea. Hay 21: offline, evidence, companies, alerts, compliance, map, isolated, roles, switch, features, two-step, retention, logbook, sessions, cleaning, maintenance, arrivals, inventory, parking, pool, payroll |
+| `app-dim-icon` (incluye objetos de inventario: `linens`, `amenities`, `kitchen`, `key`) | `name`, `size`, `animate` | Ícono con volumen (ref. Airbnb 2025) cuando un ícono representa algo: indicadores (`app-stat-tile` lo usa solo vía `DIM_FROM_LINE`), tipos de propiedad, alertas, estados vacíos, pines. Hay 19: house, apartment, room, building, other, cleaning, clock, incident, arrivals, warning, balance, box, team, chart, calendar, done, lock, blocked, search. `animate=false` en listas largas y pines |
 | `app-avatar` | `initials`, `name`, `size`, `photo`, `ring` | Personas (foto o Notionists; iniciales solo si falla) |
 | `app-tenant-mark` | `name`, `logo`, `size` | Empresas (logo o marca generada) |
 | `app-photo` | `photo` (de `PHOTOS`), `sizes`, `eager` | Fotos con srcset y fundido |
@@ -63,7 +64,7 @@ total, icon, tone, note), `app-card`, `app-empty-state`, `app-filter-chips`, `ap
 `app-demo-data-note` (aviso "Simulado"), `app-photo-picker` (`[(files)]`, `label`, `max`: elegir fotos
 con miniaturas y quitar; reporte y solución de incidencias).
 
-**Organismos:** `app-sidebar` (panel flotante de navegación que sale del botón de menú de la topbar;
+**Organismos:** `app-nav-bar` (barra de secciones bajo la topbar con íconos con volumen y color por sección; usa `dim` y `tint` de `navigation.ts`), `app-sidebar` (ahora cuadrícula clara de mosaicos) (panel flotante de navegación que sale del botón de menú de la topbar;
 lo abre y cierra `main-layout`: vistazo al pasar el cursor, fijo con clic), `app-topbar` (a todo el
 ancho, con botón de menú y logo), `app-data-table` (+ `ng-template[appCell]`),
 `app-drawer`, `app-board` (columnas por estado con `ng-template[appBoardCard]` y arrastre
@@ -77,8 +78,14 @@ al mover, corregir, ajustar o rechazar), `ApiClient` (`core/http/http-api.ts`, b
 `hasUnread` enciende el punto de la campana). Campos nativos de fecha, hora y número: clase
 `field-native`. Barra de filtros fija: `toolbar-glass`.
 
-**Directivas:** `appInView` (clase `.is-in` al entrar en pantalla; evento `entered`),
+**Directivas:** `appTilt` (inclinación 3D que sigue al cursor; lo que lleve `.pop` dentro se adelanta), `appInView` (clase `.is-in` al entrar en pantalla; evento `entered`),
 `appScrollProgress` (`--p` de 0 a 1 según el scroll).
+
+**Mapa del Inicio** (`features/dashboard/components/properties-map`): `region-geo.ts`
+(geografía real y `project(lat, lng)` al lienzo 600×340), `region-map` (base cartográfica que
+mantiene textos y trazos a tamaño fijo según `unit`), `properties-map` (cámara, grupos, gestos) y
+`map-card`. Para sumar un lugar, un volcán o una carretera, agrégalo en coordenadas en
+`region-geo.ts`.
 
 **Solo en la landing** (`features/landing/components`): `app-topo-lines` (curvas de nivel
 procedurales: seed, color, opacity, peaks), `app-hero-visual`, `app-tenant-switch`. Si el panel
@@ -87,6 +94,20 @@ necesita uno, se mueve a `shared` (como se hizo con `spot-icon`).
 **Medios:** `shared/media/photos.ts` (`PHOTOS`: antiguaArch, antiguaStreet, atitlan, lakeRoom,
 beachPool, brightRoom, cleaning, maintenance, checkin; créditos en `PHOTO_CREDITS`),
 `demo-brands.ts` (logos de las empresas de demo), `generated-art.ts` (DiceBear).
+
+## Cómo dibujar un ícono con volumen (`app-dim-icon`)
+
+No se edita el componente a mano: se agrega el objeto en
+`scripts/dim-icons/dim-icons.mjs` y se corre `node scripts/dim-icons/emit.mjs` (genera el
+componente, su CSS y los degradados `#dg-*` de index.html). Lienzo 48×48:
+
+* Sombra de contacto con `shadow(rx)`, caras con los degradados (`f('sand')`, `f('teal-dk')`…; el
+  oscuro es la cara en sombra), `prism()` para cajas y barras isométricas y `shine()` para el
+  brillo del borde iluminado.
+* Un detalle dorado en `.di-accent`; las piezas que se mueven llevan su clase (`di-win`,
+  `di-hop`, `di-swing` con su `transform-origin`, etc., ver `css.mjs`).
+* Revísalo con `node scripts/dim-icons/board.mjs <html>` y `shot.mjs` a 96, 56, 40 y 24 px:
+  debe leerse a 24.
 
 ## Cómo dibujar una ilustración nueva (`app-spot-icon`)
 

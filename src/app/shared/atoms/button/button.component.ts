@@ -54,7 +54,7 @@ export class ButtonComponent {
   readonly pressed = output<MouseEvent>();
 
   private static readonly BASE =
-    'press inline-flex items-center justify-center gap-2 font-bold whitespace-nowrap select-none transition-[background-color,box-shadow,opacity,filter] duration-150 disabled:opacity-55';
+    'press inline-flex items-center justify-center gap-2 font-bold whitespace-nowrap select-none transition-[background-color,box-shadow,opacity,filter,transform] duration-150 disabled:opacity-55';
 
   private static readonly SIZES: Record<ButtonSize, string> = {
     sm: 'h-9 rounded-sm px-3.5 text-[12.5px]',

@@ -4,6 +4,7 @@ import { SessionStore } from '../../../core/store/session.store';
 import { MockTable, latency } from '../../../core/mocks/mock-utils';
 import { DashboardApi } from './dashboard-api.service';
 import { DashboardAlert, DashboardData } from '../models/dashboard.model';
+import { projectPins } from './map-projection';
 
 const GARRENT: DashboardData = {
   teamsInField: 9,
@@ -40,16 +41,16 @@ const GARRENT: DashboardData = {
     { name: 'Luis Torres', initials: 'LT', score: 31, progress: 62 },
     { name: 'Diego Castillo', initials: 'DC', score: 26, progress: 52 },
   ],
-  pins: [
-    { id: 'p1', code: 'TB-504', name: 'Torre Botánica 504', status: 'cleaning', x: 74, y: 33 },
-    { id: 'p2', code: 'TB-1102', name: 'Torre Botánica 1102', status: 'incident', x: 77.5, y: 38 },
-    { id: 'p3', code: 'CY-12A', name: 'Cayalá 12A', status: 'occupied', x: 81, y: 28 },
-    { id: 'p4', code: 'CY-PH1', name: 'Penthouse Cayalá', status: 'ready', x: 84, y: 33 },
-    { id: 'p5', code: 'AN-SEB', name: 'Casa San Sebastián', status: 'incident', x: 52, y: 45 },
-    { id: 'p6', code: 'AN-CAR', name: 'Casa del Carmen', status: 'ready', x: 49, y: 50 },
-    { id: 'p7', code: 'AT-VIS', name: 'Villa Vista al Lago', status: 'occupied', x: 21, y: 40 },
-    { id: 'p8', code: 'MT-PLY', name: 'Casa Playa Monterrico', status: 'cleaning', x: 63, y: 82 },
-  ],
+  pins: projectPins([
+    { id: 'p1', code: 'TB-504', name: 'Torre Botánica 504', type: 'apartment', building: 'Torre Botánica', zone: 'Zona 10', lat: 14.5986, lng: -90.5094, status: 'cleaning' },
+    { id: 'p2', code: 'TB-1102', name: 'Torre Botánica 1102', type: 'apartment', building: 'Torre Botánica', zone: 'Zona 10', lat: 14.5986, lng: -90.5094, open_tickets: 1, status: 'incident' },
+    { id: 'p3', code: 'CY-12A', name: 'Cayalá 12A', type: 'apartment', building: 'Residencial Cayalá', zone: 'Zona 16', lat: 14.6092, lng: -90.4867, status: 'occupied' },
+    { id: 'p4', code: 'CY-PH1', name: 'Penthouse Cayalá', type: 'apartment', building: 'Residencial Cayalá', zone: 'Zona 16', lat: 14.6092, lng: -90.4867, status: 'ready' },
+    { id: 'p5', code: 'AN-SEB', name: 'Casa San Sebastián', type: 'house', zone: 'Antigua Guatemala', lat: 14.5611, lng: -90.7381, open_tickets: 1, status: 'incident' },
+    { id: 'p6', code: 'AN-CAR', name: 'Casa del Carmen', type: 'house', zone: 'Antigua Guatemala', lat: 14.5547, lng: -90.7299, status: 'ready' },
+    { id: 'p7', code: 'AT-VIS', name: 'Villa Vista al Lago', type: 'house', zone: 'Panajachel, Sololá', lat: 14.7409, lng: -91.1577, status: 'occupied' },
+    { id: 'p8', code: 'MT-PLY', name: 'Casa Playa Monterrico', type: 'house', zone: 'Monterrico, Santa Rosa', lat: 13.8946, lng: -90.4836, status: 'cleaning' },
+  ]),
   activity: [
     { time: '11:24', title: 'Check-in completado', meta: 'Villa Vista al Lago · 6 huéspedes', icon: 'key', tone: 'primary' },
     { time: '11:02', title: 'Custodia conciliada', meta: 'Sofía Méndez devolvió 5 de 5 llaves', icon: 'inventory', tone: 'success' },
@@ -84,11 +85,11 @@ const COSTA: DashboardData = {
     { name: 'Pedro Ajú', initials: 'PA', score: 18, progress: 72 },
     { name: 'Rosa Xol', initials: 'RX', score: 15, progress: 60 },
   ],
-  pins: [
-    { id: 'c1', code: 'MB-3B', name: 'Marbella 3B', status: 'cleaning', x: 60, y: 84 },
-    { id: 'c2', code: 'MB-5A', name: 'Marbella 5A', status: 'ready', x: 57, y: 86 },
-    { id: 'c3', code: 'MT-SOL', name: 'Casa Sol · Monterrico', status: 'occupied', x: 66, y: 83 },
-  ],
+  pins: projectPins([
+    { id: 'c1', code: 'MB-3B', name: 'Marbella 3B', type: 'apartment', building: 'Condominio Marbella', zone: 'Puerto de San José', lat: 13.9254, lng: -90.8243, status: 'cleaning' },
+    { id: 'c2', code: 'MB-5A', name: 'Marbella 5A', type: 'apartment', building: 'Condominio Marbella', zone: 'Puerto de San José', lat: 13.9254, lng: -90.8243, status: 'ready' },
+    { id: 'c3', code: 'MT-SOL', name: 'Casa Sol · Monterrico', type: 'house', zone: 'Monterrico, Santa Rosa', lat: 13.8961, lng: -90.4772, status: 'occupied' },
+  ]),
   activity: [
     { time: '10:12', title: 'Limpieza finalizada', meta: 'Marbella 5A · Andrea Cifuentes', icon: 'check-circle', tone: 'success' },
     { time: '09:30', title: 'Limpieza iniciada', meta: 'Marbella 3B · Pedro Ajú', icon: 'play', tone: 'gold' },

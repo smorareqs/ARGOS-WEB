@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input, output } from '@angular/core';
 import { MaintenanceStore } from '../../store/maintenance.store';
-import { ASSET_STATUS, CATEGORY_META, TICKET_STATUS, Vendor, placeOf } from '../../models/maintenance.model';
+import { ASSET_STATUS, AssetCategory, CATEGORY_META, TICKET_STATUS, Vendor, placeOf } from '../../models/maintenance.model';
 import { ButtonComponent } from '../../../../shared/atoms/button/button.component';
 import { IconComponent } from '../../../../shared/atoms/icon/icon.component';
+import { DimIconComponent } from '../../../../shared/atoms/dim-icon/dim-icon.component';
 import { BadgeComponent } from '../../../../shared/atoms/badge/badge.component';
 import { EmptyStateComponent } from '../../../../shared/molecules/empty-state/empty-state.component';
 import { gtq } from '../../../../shared/utils/time';
@@ -15,7 +16,7 @@ import { gtq } from '../../../../shared/utils/time';
 @Component({
   selector: 'app-vendors-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IconComponent, BadgeComponent, EmptyStateComponent],
+  imports: [IconComponent, DimIconComponent, BadgeComponent, EmptyStateComponent],
   template: `
     @if (!store.loading() && !store.vendors().length) {
       <div class="rounded-card border border-border-card bg-surface shadow-e1">
@@ -24,17 +25,22 @@ import { gtq } from '../../../../shared/utils/time';
     } @else {
       <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         @for (v of store.vendors(); track v.id; let n = $index) {
-          <button type="button" class="vcard reveal rounded-card border border-border-card bg-surface p-5 text-left shadow-e1" [class.is-off]="!v.is_active" [style.--i]="n" (click)="opened.emit(v.id)">
-            <div class="flex items-center justify-between gap-2">
-              <span class="text-[11px] uppercase tracking-[1.2px] text-secondary">{{ v.service_type ?? 'Servicio general' }}</span>
-              @if (!v.is_active) { <app-badge tone="muted" size="sm">Inactivo</app-badge> }
-              @if (v.open_tickets) { <app-badge tone="warning" size="sm">{{ v.open_tickets }} {{ v.open_tickets === 1 ? 'abierta' : 'abiertas' }}</app-badge> }
+          <button type="button" class="vcard group reveal rounded-card border border-border-card bg-surface p-5 text-left shadow-e1" [class.is-off]="!v.is_active" [style.--i]="n" (click)="opened.emit(v.id)">
+            <div class="flex items-start gap-4">
+              <span class="tile h-[60px] w-[60px] rounded-[16px]" [style.background]="kind(v).bg"><app-dim-icon [name]="kind(v).dim" [size]="44" /></span>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="truncate text-[11px] uppercase tracking-[1.2px] text-secondary">{{ v.service_type ?? 'Servicio general' }}</span>
+                  @if (!v.is_active) { <app-badge tone="muted" size="sm">Inactivo</app-badge> }
+                  @if (v.open_tickets) { <app-badge tone="warning" size="sm">{{ v.open_tickets }} {{ v.open_tickets === 1 ? 'abierta' : 'abiertas' }}</app-badge> }
+                </div>
+                <h3 class="mt-0.5 font-display text-[19px] font-semibold leading-tight text-primary">{{ v.name }}</h3>
+                <p class="mt-1 flex flex-wrap gap-x-3 text-[12.5px] text-text-secondary">
+                  @if (v.contact_name) { <span>{{ v.contact_name }}</span> }
+                  @if (v.phone) { <span class="inline-flex items-center gap-1"><app-icon name="phone" [size]="13" />{{ v.phone }}</span> }
+                </p>
+              </div>
             </div>
-            <h3 class="mt-1 font-display text-[19px] font-semibold text-primary">{{ v.name }}</h3>
-            <p class="mt-1 flex flex-wrap gap-x-3 text-[12.5px] text-text-secondary">
-              @if (v.contact_name) { <span>{{ v.contact_name }}</span> }
-              @if (v.phone) { <span class="inline-flex items-center gap-1"><app-icon name="phone" [size]="13" />{{ v.phone }}</span> }
-            </p>
             <dl class="mt-4 grid grid-cols-3 gap-2 border-t border-divider pt-4 text-center">
               <div><dt class="text-[10.5px] uppercase tracking-[0.8px] text-text-secondary">Activos</dt><dd class="tabular mt-1 font-display text-[20px] font-semibold text-primary">{{ v.assets_count }}</dd></div>
               <div><dt class="text-[10.5px] uppercase tracking-[0.8px] text-text-secondary">Atendidas</dt><dd class="tabular mt-1 font-display text-[20px] font-semibold text-primary">{{ v.tickets_done }}</dd></div>
@@ -50,6 +56,9 @@ import { gtq } from '../../../../shared/utils/time';
     .vcard { transition: box-shadow var(--dur-base), transform var(--spring-standard-dur) var(--spring-standard); }
     .vcard:hover { box-shadow: var(--shadow-e2); transform: translateY(-2px); }
     .vcard.is-off { opacity: 0.7; }
+    .tile { display: grid; place-items: center; flex-shrink: 0; box-shadow: inset 0 -2px 0 rgba(0,0,0,.05);
+      transition: transform var(--spring-snappy-dur) var(--spring-snappy); }
+    .vcard:hover .tile { transform: translateY(-3px) rotate(-4deg); }
     @media (prefers-reduced-motion: reduce) { .vcard { transition: none; } }
   `,
 })
@@ -58,6 +67,36 @@ export class VendorsPanelComponent {
   readonly opened = output<string>();
   protected readonly money = (v: number) => gtq(v, 0);
   protected readonly hours = (h: number) => (h >= 48 ? `${Math.round(h / 24)} d` : `${Math.round(h)} h`);
+
+  /** Categoría más frecuente entre sus activos; si no tiene, la que sugiere su especialidad. */
+  private readonly kinds = computed(() => {
+    const by = new Map<string, Map<AssetCategory, number>>();
+    for (const a of this.store.assets()) {
+      if (!a.vendor_id) continue;
+      const m = by.get(a.vendor_id) ?? new Map<AssetCategory, number>();
+      m.set(a.category, (m.get(a.category) ?? 0) + 1);
+      by.set(a.vendor_id, m);
+    }
+    return by;
+  });
+  protected kind(v: Vendor) {
+    const counts = this.kinds().get(v.id);
+    const top = counts ? [...counts].sort((a, b) => b[1] - a[1])[0][0] : guess(v.service_type);
+    return CATEGORY_META[top];
+  }
+}
+
+function guess(service: string | null): AssetCategory {
+  const s = (service ?? '').toLowerCase();
+  if (/aire|a\/c|clima|refriger/.test(s)) return 'hvac';
+  if (/agua|bomba|piscina/.test(s)) return 'water';
+  if (/plom|fontan/.test(s)) return 'plumbing';
+  if (/electr/.test(s)) return 'electrical';
+  if (/elevador|ascensor/.test(s)) return 'elevator';
+  if (/pint/.test(s)) return 'paint';
+  if (/c[aá]mara|segur/.test(s)) return 'camera';
+  if (/mueble|tapic/.test(s)) return 'furniture';
+  return 'other';
 }
 
 /**
@@ -67,7 +106,7 @@ export class VendorsPanelComponent {
 @Component({
   selector: 'app-vendor-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ButtonComponent, IconComponent, BadgeComponent],
+  imports: [ButtonComponent, IconComponent, DimIconComponent, BadgeComponent],
   template: `
     @let v = vendor();
     <div class="flex min-h-full flex-col">
@@ -86,7 +125,7 @@ export class VendorsPanelComponent {
           @for (a of assets(); track a.id) {
             <li>
               <button type="button" class="row flex w-full items-center gap-3 px-3.5 py-2.5 text-left" (click)="openAsset.emit(a.id)">
-                <app-icon [name]="cat[a.category].icon" [size]="16" class="shrink-0 text-teal-muted" />
+                <span class="grid h-8 w-8 shrink-0 place-items-center rounded-[10px]" [style.background]="cat[a.category].bg"><app-dim-icon [name]="cat[a.category].dim" [size]="24" [animate]="false" /></span>
                 <span class="min-w-0 flex-1 truncate text-[13px] font-bold text-primary">{{ a.name }} <span class="text-[11.5px] font-normal text-text-secondary" [class.font-mono]="!!a.property_code">{{ where(a) }}</span></span>
                 <app-badge [tone]="st[a.status].tone" size="sm">{{ st[a.status].label }}</app-badge>
               </button>

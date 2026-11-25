@@ -1,0 +1,121 @@
+<!-- Estados: también filtran el mapa -->
+<div class="mb-3 flex flex-wrap gap-1.5 px-1" role="group" aria-label="Filtrar por estado">
+  @for (s of legend(); track s.key) {
+    <button
+      type="button"
+      class="chip"
+      [class.off]="hidden().has(s.key)"
+      [attr.aria-pressed]="!hidden().has(s.key)"
+      [disabled]="!s.count"
+      (click)="toggle(s.key)"
+    >
+      <span class="h-2 w-2 rounded-pill" [style.background]="s.color"></span>{{ s.label }}
+      <span class="tabular font-bold text-primary">{{ s.count }}</span>
+    </button>
+  }
+</div>
+
+<div
+  #frame
+  class="frame relative w-full overflow-hidden rounded-tile"
+  [class.grabbing]="dragging()"
+  (pointerdown)="onDown($event)"
+  (pointermove)="onMove($event)"
+  (pointerup)="onUp($event)"
+  (pointercancel)="onUp($event)"
+  (wheel)="onWheel($event)"
+  (dblclick)="onDouble($event)"
+>
+  <app-region-map class="absolute inset-0" [view]="view()" [unit]="unit()" [avoid]="covered()" />
+
+  @for (c of clusters(); track c.id; let i = $index) {
+    @if (c.members.length === 1) {
+      @let p = c.members[0];
+      <button
+        type="button"
+        class="pin pill"
+        [class.on]="isOn(c)"
+        [style.left.px]="c.sx"
+        [style.top.px]="c.sy"
+        [style.--i]="i"
+        [attr.aria-label]="p.name + ' · ' + meta[p.status].label"
+        (click)="openCluster(c)"
+      >
+        <app-dim-icon [name]="dim[p.type]" [size]="22" [animate]="false" />
+        <span class="font-mono">{{ p.code }}</span>
+        <span class="dot" [class.pulse]="p.status === 'incident'" [style.background]="meta[p.status].color"></span>
+      </button>
+    } @else if (c.building) {
+      <button
+        type="button"
+        class="pin pill"
+        [class.on]="isOn(c)"
+        [style.left.px]="c.sx"
+        [style.top.px]="c.sy"
+        [style.--i]="i"
+        [attr.aria-label]="c.building + ', ' + c.members.length + ' unidades'"
+        (click)="openCluster(c)"
+      >
+        <app-dim-icon name="building" [size]="22" [animate]="false" />
+        <span class="max-w-[120px] truncate">{{ c.building }}</span>
+        <span class="count">{{ c.members.length }}</span>
+      </button>
+    } @else {
+      <button
+        type="button"
+        class="pin group-pin"
+        [class.on]="isOn(c)"
+        [style.left.px]="c.sx"
+        [style.top.px]="c.sy"
+        [style.--i]="i"
+        [attr.aria-label]="c.members.length + ' propiedades, acercar'"
+        (click)="openCluster(c)"
+      >
+        <svg viewBox="0 0 44 44" class="absolute inset-0" aria-hidden="true">
+          <circle cx="22" cy="22" r="17" fill="none" stroke="#e8ece9" stroke-width="5" />
+          @for (r of c.ring; track $index) {
+            <circle cx="22" cy="22" r="17" fill="none" [attr.stroke]="r.color" stroke-width="5" [attr.stroke-dasharray]="r.dash" [attr.stroke-dashoffset]="r.offset" transform="rotate(-90 22 22)" />
+          }
+        </svg>
+        <span class="relative">{{ c.members.length }}</span>
+        @if (c.ring.length && c.members[0].status === 'incident') {
+          <span class="alarm" [style.background]="meta.incident.color"></span>
+        }
+      </button>
+    }
+  }
+
+  <!-- Zonas -->
+  @if (areas().length > 1) {
+    <div class="no-pan absolute left-2.5 top-2.5 hidden max-w-[70%] flex-wrap gap-1.5 sm:flex">
+      @for (a of areas(); track a.label) {
+        <button type="button" class="area" (click)="goArea(a.members)">
+          {{ a.label }} <span class="tabular text-text-secondary">{{ a.members.length }}</span>
+        </button>
+      }
+    </div>
+  }
+
+  <!-- Controles -->
+  <div class="no-pan controls absolute right-2.5 top-2.5 flex flex-col">
+    <button type="button" aria-label="Acercar" [disabled]="zoomPct() >= maxZoom" (click)="zoom(0.5)"><app-icon name="plus" [size]="16" /></button>
+    <button type="button" aria-label="Alejar" [disabled]="zoomPct() <= 1" (click)="zoom(2)"><app-icon name="minus" [size]="16" /></button>
+    <button type="button" aria-label="Ver todas tus propiedades" title="Ver todas" (click)="fitAll()"><app-icon name="focus" [size]="16" /></button>
+  </div>
+
+  <!-- Escala -->
+  <div class="scale pointer-events-none absolute bottom-2.5 right-2.5 flex flex-col items-end gap-0.5">
+    <span class="text-[10px] font-bold text-teal-muted">{{ scale().label }}</span>
+    <span class="bar" [style.width.px]="scale().px"></span>
+  </div>
+
+  @if (hint()) {
+    <div class="hint pointer-events-none absolute inset-0 flex items-center justify-center">
+      <span class="rounded-field bg-primary/85 px-4 py-2 text-[12.5px] font-bold text-white">Usa Ctrl + rueda para acercar el mapa</span>
+    </div>
+  }
+
+  @if (card(); as k) {
+    <app-map-card class="no-pan absolute bottom-2.5 left-2.5 z-20 w-[296px] max-sm:right-2.5 max-sm:w-auto" [pins]="k.pins" [title]="k.title" (closed)="selected.set(null)" (opened)="pinClick.emit($event)" (picked)="pick($event)" />
+  }
+</div>

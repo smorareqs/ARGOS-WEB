@@ -19,6 +19,7 @@ import { PLATFORM_NAME, SessionStore } from '../../core/store/session.store';
 import { ToastService } from '../../core/services/toast.service';
 import { buildNav } from './navigation';
 import { BillingBannerComponent } from '../../shared/molecules/billing-banner/billing-banner.component';
+import { NavBarComponent } from '../../shared/organisms/nav-bar/nav-bar.component';
 
 /** closed · peek (abierto por pasar el cursor) · open (abierto con clic). */
 type NavMode = 'closed' | 'peek' | 'open';
@@ -37,7 +38,7 @@ type NavMode = 'closed' | 'peek' | 'open';
 @Component({
   selector: 'app-main-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, SidebarComponent, TopbarComponent, NotificationTrayComponent, BillingBannerComponent],
+  imports: [RouterOutlet, SidebarComponent, TopbarComponent, NotificationTrayComponent, BillingBannerComponent, NavBarComponent],
   template: `
     <a href="#contenido" class="skip">Saltar al contenido</a>
     <div class="min-h-dvh bg-background font-sans">
@@ -59,6 +60,7 @@ type NavMode = 'closed' | 'peek' | 'open';
         (profile)="router.navigateByUrl('/perfil')"
         (sessions)="router.navigateByUrl('/perfil?tab=sesiones')"
       />
+      <app-nav-bar [sections]="nav()" [compact]="scrolled()" />
       @if (navMode() === 'open') {
         <div class="scrim fixed inset-0 z-40 md:hidden" (click)="closeNav()" animate.enter="fade-in" animate.leave="fade-out"></div>
       }

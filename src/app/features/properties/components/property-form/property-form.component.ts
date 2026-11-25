@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, computed, effect, input, output, signal, untracked } from '@angular/core';
 import { ApiError } from '../../../../core/http/api-error';
-import { SegmentedComponent } from '../../../../shared/molecules/segmented/segmented.component';
 import { FormFieldComponent } from '../../../../shared/molecules/form-field/form-field.component';
 import { InputComponent } from '../../../../shared/atoms/input/input.component';
 import { SelectComponent } from '../../../../shared/atoms/select/select.component';
@@ -17,6 +16,7 @@ import {
   parseCoords,
 } from '../../models/property.model';
 import { PropertyCoverComponent } from '../property-cover/property-cover.component';
+import { DimIconComponent } from '../../../../shared/atoms/dim-icon/dim-icon.component';
 
 const CODE_RE = /^[A-Z0-9][A-Z0-9-]{1,31}$/;
 
@@ -30,7 +30,7 @@ const CODE_RE = /^[A-Z0-9][A-Z0-9-]{1,31}$/;
 @Component({
   selector: 'app-property-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [PropertyCoverComponent, SegmentedComponent, FormFieldComponent, InputComponent, SelectComponent, ButtonComponent, IconComponent],
+  imports: [PropertyCoverComponent, DimIconComponent, FormFieldComponent, InputComponent, SelectComponent, ButtonComponent, IconComponent],
   template: `
     <form novalidate class="flex min-h-full flex-col" (submit)="submit($event)">
       <div class="px-6 pb-2 pt-7 pr-14">
@@ -85,7 +85,15 @@ const CODE_RE = /^[A-Z0-9][A-Z0-9-]{1,31}$/;
         </div>
 
         <app-form-field label="Tipo">
-          <app-segmented [options]="types" [(value)]="type" ariaLabel="Tipo de propiedad" class="w-full" />
+          <!-- Ref. el alta de anfitrión de Airbnb: el tipo se elige por su ícono -->
+          <div class="grid grid-cols-4 gap-2" role="radiogroup" aria-label="Tipo de propiedad">
+            @for (t of types; track t.value) {
+              <button type="button" role="radio" class="type-tile group" [class.on]="type() === t.value" [attr.aria-checked]="type() === t.value" (click)="type.set(t.value)">
+                <app-dim-icon [name]="t.value" [size]="42" />
+                <span>{{ t.label }}</span>
+              </button>
+            }
+          </div>
         </app-form-field>
 
         <app-form-field label="Edificio" for="pf-building" [optional]="true" hint="Agrupa propiedades que comparten parqueos y áreas comunes.">
@@ -146,7 +154,15 @@ const CODE_RE = /^[A-Z0-9][A-Z0-9-]{1,31}$/;
       </div>
     </form>
   `,
-  styles: `:host { display: block; min-height: 100%; }`,
+  styles: `
+    :host { display: block; min-height: 100%; }
+    .type-tile { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 4px 9px; border-radius: var(--radius-tile);
+      border: 1px solid var(--color-border-field); background: var(--color-surface); font-size: 12px; font-weight: 600; color: var(--color-text-body);
+      transition: border-color var(--dur-fast), background var(--dur-fast), transform var(--spring-snappy-dur) var(--spring-snappy); }
+    .type-tile:hover { border-color: var(--color-teal-muted); transform: translateY(-1px); }
+    .type-tile.on { border-color: var(--color-primary); box-shadow: inset 0 0 0 1px var(--color-primary); background: var(--color-teal-washed); color: var(--color-primary); }
+    .type-tile:active { transform: scale(.97); }
+  `,
 })
 export class PropertyFormComponent {
   readonly buildings = input.required<readonly Building[]>();

@@ -1,19 +1,19 @@
 <app-demo-data-note module="dashboard" label="El inicio" />
-@if (store.data()?.simulated?.tasks) {
-  <p class="sim-note mb-6 flex items-start gap-2.5 rounded-field border border-border-card bg-surface px-4 py-3 text-[12.5px] leading-relaxed text-text-body" role="note">
-    <span class="sim shrink-0">Muestra</span>
-    <span>{{ store.data()?.simulated?.reservations ? 'Alertas, incidencias, mantenimientos, mapa y actividad son reales. Limpiezas, cumplimiento, ranking y llegadas son de muestra hasta que se conecten el itinerario y las reservas.' : 'Alertas, incidencias, mantenimientos, llegadas, mapa y actividad son reales. Limpiezas, cumplimiento y ranking son de muestra hasta que se conecte el itinerario.' }}</span>
-  </p>
-}
-
-<!-- Área de lectura: saludo y contexto -->
-<div class="reveal mb-7 flex flex-wrap items-end justify-between gap-4">
-  <div>
-    <div class="mb-2 text-[11px] uppercase tracking-[1.6px] text-secondary">{{ today() }}</div>
-    <h1 class="font-display text-[36px] font-semibold leading-[1.04] tracking-display text-primary sm:text-[42px]">
-      {{ store.greeting() }}
-    </h1>
-    <p class="mt-2 text-[14px] text-text-body">Esto es lo que pasa hoy en {{ store.tenantName() }}.</p>
+<!-- Área de lectura: saludo con el sol o la luna según la hora -->
+<div class="reveal mb-4 flex flex-wrap items-center justify-between gap-4">
+  <div class="flex items-center gap-4">
+    <app-dim-icon [name]="night() ? 'moon' : 'sun'" [size]="84" class="greet-icon -my-3 shrink-0" />
+    <div>
+      <div class="mb-1 flex items-center gap-2 text-[11px] uppercase tracking-[1.6px] text-secondary">
+        {{ today() }}
+        @if (store.data()?.simulated?.tasks) {
+          <span class="sim" [title]="sampleNote()">Muestra</span>
+        }
+      </div>
+      <h1 class="font-display text-[36px] font-semibold leading-[1.04] tracking-display text-primary sm:text-[44px]">
+        {{ store.greeting() }}
+      </h1>
+    </div>
   </div>
   @if (store.data(); as d) {
     <span class="inline-flex items-center gap-2.5 rounded-field border border-border-card bg-surface px-4 py-2 shadow-e1">
@@ -60,7 +60,7 @@
   <!-- Indicadores del día -->
   <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
     <app-stat-tile
-      class="reveal lift"
+      class="reveal"
       style="--i: 1"
       label="Limpiezas hoy"
       icon="broom"
@@ -70,7 +70,7 @@
       [note]="d.stats.cleaningsTotal - d.stats.cleaningsDone + ' por terminar antes de las 15:00'"
     />
     <app-stat-tile
-      class="reveal lift"
+      class="reveal"
       style="--i: 2"
       label="Retrasadas"
       icon="clock"
@@ -79,7 +79,7 @@
       [note]="d.stats.late ? 'Fuera de su ventana de horario' : 'Todo a tiempo por ahora'"
     />
     <app-stat-tile
-      class="reveal lift"
+      class="reveal"
       style="--i: 3"
       label="Incidencias abiertas"
       icon="maintenance"
@@ -88,7 +88,7 @@
       [note]="d.stats.incidentsUnassigned === undefined ? '2 sin asignar a un responsable' : d.stats.incidentsUnassigned ? d.stats.incidentsUnassigned + ' sin responsable' : 'Todas tienen responsable'"
     />
     <app-stat-tile
-      class="reveal lift"
+      class="reveal"
       style="--i: 4"
       label="Llegadas hoy"
       icon="door"
@@ -98,9 +98,26 @@
     />
   </div>
 
+  <!-- Mapa a todo el ancho: real (Google 3D) si hay clave; si no, ilustrado -->
+  <section class="reveal mt-6 rounded-card border border-border-card bg-surface p-3 shadow-e1 sm:p-4" style="--i: 5">
+    <div class="mb-2 flex items-center justify-between px-1">
+      <h2 class="flex items-center gap-2.5 font-display text-[22px] font-semibold text-primary">
+        <app-dim-icon name="house" [size]="44" class="-my-2" /> Propiedades de hoy
+      </h2>
+      <a routerLink="/propiedades" class="card-link flex items-center gap-1 rounded-xs text-[12px] font-bold text-action">
+        Ver todas <app-icon name="arrow-right" [size]="14" />
+      </a>
+    </div>
+    @if (realMap()) {
+      <app-real-map [pins]="d.pins" (pinClick)="onPin($event)" (failed)="mapFailed.set(true)" />
+    } @else {
+      <app-properties-map [pins]="d.pins" (pinClick)="onPin($event)" />
+    }
+  </section>
+
   <div class="mt-5 grid gap-5 lg:grid-cols-12">
     <!-- Columna izquierda -->
-    <div class="flex flex-col gap-5 lg:col-span-5">
+    <div class="flex min-w-0 flex-col gap-5 lg:col-span-5">
       <section class="reveal rounded-card border border-border-card bg-surface p-5 shadow-e1 sm:p-6" style="--i: 5">
         <div class="mb-5 flex items-center justify-between">
           <h2 class="flex items-center gap-2 font-display text-[20px] font-semibold text-primary">Cumplimiento del día @if (d.simulated?.tasks) { <span class="sim">Muestra</span> }</h2>
@@ -133,16 +150,7 @@
     </div>
 
     <!-- Columna derecha -->
-    <div class="flex flex-col gap-5 lg:col-span-7">
-      <section class="reveal rounded-card border border-border-card bg-surface p-4 shadow-e1 sm:p-5" style="--i: 5">
-        <div class="mb-3 flex items-center justify-between px-1">
-          <h2 class="font-display text-[20px] font-semibold text-primary">Propiedades de hoy</h2>
-          <a routerLink="/propiedades" class="card-link flex items-center gap-1 rounded-xs text-[12px] font-bold text-action">
-            Ver todas <app-icon name="arrow-right" [size]="14" />
-          </a>
-        </div>
-        <app-properties-map [pins]="d.pins" (pinClick)="onPin($event)" />
-      </section>
+    <div class="flex min-w-0 flex-col gap-5 lg:col-span-7">
 
       <section class="reveal rounded-card border border-border-card bg-surface p-5 shadow-e1" style="--i: 6">
         <h2 class="mb-4 font-display text-[19px] font-semibold text-primary">Hoy en tu operación</h2>

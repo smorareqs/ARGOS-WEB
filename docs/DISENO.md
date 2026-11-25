@@ -365,9 +365,105 @@ Decisiones:
 * Los íconos de línea siguen en controles, navegación y en los stat tiles, como estaba
   aprobado.
 
+## Íconos con volumen, mapa real y movimiento (2026-11-23)
+
+Pedido: más íconos, elementos visuales y animación, y un mapa "mucho mejor". Referencias: la
+iconografía dimensional de Airbnb (2025: objetos con luz, sombra y un brillo, animados), el mapa de
+búsqueda de Airbnb (Google Maps apagado, marcadores en píldora con el dato, mini-pines y zoom arriba a
+la derecha), los grupos con anillo por categoría de Mapbox, la tarjeta flotante sobre el mapa de
+Airbnb, el alta de anfitrión de Airbnb (el tipo de espacio se elige por su ícono) y los tiempos de
+microinteracción de Linear y Stripe (150–300 ms, hundido al presionar).
+
+* **Íconos con volumen** (`app-dim-icon`, 19 objetos): casa, apartamento, habitación, edificio,
+  llave (otro), cubeta, despertador, caja de herramientas, maleta, cono, balanza, caja, gafete,
+  barras, calendario, sello, candado, alto y lupa. Luz arriba a la izquierda, sombra de contacto y un
+  detalle dorado; pintan con degradados globales `#dg-*` (index.html). Cada uno tiene su gesto al
+  pasar el cursor por él o por su tarjeta: ventanas que se encienden, despertador que suena, maleta
+  que salta, balanza que se mece, burbujas en la cubeta. Reemplazan el patrón "ícono de línea en
+  cuadrito pastel" en los 23 indicadores, en las alertas del Inicio y en los estados vacíos; marcan
+  el tipo en las tarjetas de propiedad (placa sobre la portada), en la ficha, en el mapa y en el alta
+  (cuatro tarjetas con ícono en lugar del segmentado). Los íconos de línea siguen en controles y
+  navegación. Tablero: `.claude/skills/argos-redesign/scripts/dim-icons/board.mjs`.
+* **Mapa del Inicio con geografía real**: centro y sur de Guatemala proyectados desde coordenadas
+  (costa, canal de Chiquimulilla, Atitlán y Amatitlán, ocho volcanes con cara iluminada y en sombra,
+  Fuego y Pacaya con humo, curvas de nivel, sombreado de la sierra, seis ríos, CA-1, CA-9, CA-2 y
+  RN-14 con escudos, ciudades y, al acercar, calles de Antigua y la capital y lugares como el Parque
+  Central, el Arco o el aeropuerto). Las propiedades van en sus coordenadas (o las de su edificio).
+  La cámara vuela de la región a tus propiedades al cargar; se arrastra, se acerca con Ctrl + rueda,
+  doble clic, pellizco o los botones, y "Ver todas" reencuadra. Los pines cercanos forman un grupo
+  con anillo de estados que se separa al tocarlo; los de un mismo edificio, una píldora con su nombre.
+  Cada propiedad es una píldora con su ícono, código y estado (la incidencia late). Tarjeta flotante
+  con portada, tipo, lugar, estado e incidencias, o la lista de un edificio. Los estados filtran, hay
+  atajos por zona y escala en km. Sin dependencias ni teselas externas.
+* **Movimiento**: los botones se hunden al presionar (faltaba `transform` en su transición); los
+  íconos entran con rebote y las barras de las gráficas crecen; pines, tarjeta y lista del mapa
+  entran escalonados. Todo respeta "reducir movimiento".
+
+
+
+## Segunda vuelta: navegación visual, mapa real, 3D y dibujo (2026-11-24)
+
+La primera vuelta se sintió "monótona, apagada y con mucho texto". Cambios:
+
+* **Barra de secciones** bajo la topbar (ref. la barra de categorías de Airbnb): cada módulo con su
+  ícono con volumen sobre el nombre, halo de su color al pasar el cursor y en la activa, subrayado.
+  Siempre a la vista; se compacta al bajar; flechas o desliz cuando no cabe. El **menú** pasó de lista
+  oscura a cuadrícula clara de mosaicos de color por área (como la biblioteca de apps de iOS).
+* **Mapa real**: Google Maps 3D fotorrealista (volcanes, calles y edificios en relieve) cuando el
+  backend tiene `ARGOS_GOOGLE_MAPS_KEY`. La cámara vuela de la región a tus propiedades; al tocar
+  una baja inclinada y gira alrededor; "Recorrido" pasea por todas; satélite o mapa. Un marcador
+  por edificio. Sin clave, o si Google la rechaza, el mapa ilustrado. El mapa ocupa todo el ancho.
+* **Cosas que salen de la pantalla**: los íconos de los indicadores sobresalen por arriba de su
+  tarjeta, la campana de "Requiere tu atención" sale del bloque y suena, el saludo lleva sol o luna
+  flotando; indicadores y tarjetas de propiedad se inclinan en 3D siguiendo el cursor (directiva
+  `appTilt`, ref. tarjetas de Apple TV) con brillo, y lo marcado `.pop` se adelanta.
+* **Portadas en dibujo** (urban sketching): acuarela con bordes irregulares corrida respecto de la
+  tinta, línea temblorosa, rayado en el suelo y grano de papel, todo con filtros SVG. Sin la paleta
+  de noche (la acuarela pide papel claro).
+* **Itinerario** (ref. los eventos de Google Calendar): cada tarea es un bloque del color de su
+  tipo con su ícono con volumen; insignia de estado (retrasada late en rojo, en curso con barra de
+  avance, finalizadas atenuadas), leyenda de tipos, "Hoy" marcado y tareas por día.
+* **Favicon** con borde claro (se leía como un cuadro en pestañas oscuras) y versión en el enlace
+  para que el navegador no use uno guardado. Juego completo generado del SVG: `favicon.ico`
+  (16/32/48), `favicon-32.png`, `favicon.svg` y `apple-touch-icon.png` (180, iOS no acepta SVG).
+* **Menos texto**: el aviso de datos de muestra pasó a una etiqueta con detalle al pasar el cursor;
+  se quitaron la frase bajo el saludo y la ayuda del mapa.
+
+
+
+## Tercera vuelta: mapa 3D vectorial e inventario visual (2026-11-24)
+
+* **Mapa del Inicio en 3D vectorial** (modo `ROADMAP` de `Map3DElement`, esquema claro): calles
+  limpias, edificios en volumen e íconos de lugares; se lee como ilustración animada y no como foto.
+  "Satélite" queda como segunda opción. El fotorrealista de entrada se sentía oscuro y, al bajar a
+  una propiedad de costa, la cámara terminaba mirando solo mar. El mapa ya no ocupa media pantalla:
+  alto entre 320 y 440 px (400 en celular). Al tocar una propiedad la cámara baja a ~1 km inclinada.
+  Pendiente: un estilo propio en Google Cloud (Map ID) para ocultar los íconos de comercios.
+* **Inventario · Artículos** pasó de tabla de cinco columnas a lista visual (ref. Sortly y la vista
+  de inventario de Shopify): cada artículo con el objeto de su categoría (íconos con volumen nuevos:
+  toallas, amenidades, taza de café y llave), categoría en píldora de su color, un medidor de nivel
+  con la marca del mínimo y el estado en palabras ("Agotado", "Bajo mínimo", "En orden"). Lo que falta
+  sube primero y lleva una barra de color a la izquierda; se puede ordenar por nombre o existencia.
+  En celular, el estado ("faltan 8") reemplaza a la categoría.
+* **Mapa sin giro:** al tocar una propiedad la cámara baja y se queda quieta (el giro alrededor
+  distraía).
+* **Mantenimiento** con el mismo patrón de lista visual. *Activos*: objeto de su categoría (nueve
+  íconos con volumen nuevos: minisplit, gota, foco, elevador, cámara, rodillo, lavadora, llave
+  inglesa y sofá), lugar, estado en píldora de color, lo abierto y el preventivo como cuenta atrás
+  ("En 58 d", "Toca hoy", "Vencido hace 3 d"); lo que falla sube primero. *Incidencias* en
+  tabla: barra con el color de la urgencia, objeto del activo, estado, responsable con avatar y
+  edad; las cerradas se atenúan al final. Las tarjetas del tablero también llevan el objeto.
+  *Preventivos*: el objeto del activo en "Lo que toca" y en miniatura en los días del calendario.
+  *Proveedores*: cada tarjeta con el objeto de su especialidad (la categoría más común de sus
+  activos o, si no tiene, la que sugiere su tipo de servicio).
+
 ## Pendiente de decidir
 
 * **Tipografía de la app:** la web ya usa Plus Jakarta Sans; la app sigue en EB Garamond +
   Verdana. Alinearla es decisión de Persona B.
 * **Fotos propias** para la landing y el login (ver "Fotografía").
+* **Íconos con volumen** (2026-11-23): propuesta aplicada en indicadores, alertas, vacíos y
+  propiedades; falta la confirmación del usuario para pasarla a reglas-visuales.md.
+* **Mapa con teselas reales**: si se quiere calle por calle, Google Maps (permitido por el proyecto)
+  con estilo apagado y los mismos marcadores; requiere clave y facturación de Google.
 * **Modo oscuro** fuera de esta versión (ux-ui.md §2.2); los tokens ya son semánticos.
