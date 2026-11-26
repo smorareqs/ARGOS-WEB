@@ -5,7 +5,7 @@ export const environment = {
   apiBaseUrl: 'http://localhost:8000',
   /** true → ese módulo usa su mock (reparto.md §3.1). */
   mocks: { auth: false, dashboard: false, properties: false, team: false, demoRequests: true,
-    itinerary: true, inventory: true, maintenance: false, reservations: false, sharedAreas: true, parking: true, hr: false, attendance: false, metrics: false, alerts: false, audit: false, settings: false, billing: false, notifications: true, chat: true },
+    itinerary: true, inventory: true, maintenance: false, reservations: false, sharedAreas: true, parking: true, hr: false, attendance: false, metrics: false, alerts: false, audit: false, settings: false, billing: false, notifications: true, chat: false },
   /** Logos de las empresas de demostración (DEMO_TENANT_LOGOS). */
   demoTenantLogos: true,
 };
